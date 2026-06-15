@@ -13,24 +13,21 @@ import {
   request
 } from '@stacks/connect';
 import { STACKS_CHAIN_ID, STACKS_NETWORK } from '../config/env';
+import { selectStxAddress } from '../utils/stacksWallet';
 
 const StacksWalletContext = createContext(null);
-
-function selectStxAddress(addresses = []) {
-  return addresses.find(entry => entry.symbol === 'STX') || addresses[0] || null;
-}
 
 export function Web3Provider({ children }) {
   const [account, setAccount] = useState(null);
 
   useEffect(() => {
-    const cached = selectStxAddress(getLocalStorage()?.addresses || []);
+    const cached = selectStxAddress(getLocalStorage());
     if (cached) setAccount(cached);
   }, []);
 
   const open = useCallback(async () => {
     const response = await connect({ network: STACKS_NETWORK });
-    const next = selectStxAddress(response.addresses);
+    const next = selectStxAddress(response);
     if (!next) throw new Error('The wallet did not return a Stacks address');
     setAccount(next);
     return next;
