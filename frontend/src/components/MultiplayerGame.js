@@ -48,7 +48,7 @@ const MultiplayerGame = ({ username }) => {
   const cursorTimeoutRef = useRef(null);
 
   // Keyboard control state
-  const [keyboardPaddleY, setKeyboardPaddleY] = useState(0);
+  const [, setKeyboardPaddleY] = useState(0);
   const keysPressed = useRef({ ArrowUp: false, ArrowDown: false });
   const keyboardIntervalRef = useRef(null);
 

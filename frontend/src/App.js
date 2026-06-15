@@ -13,7 +13,7 @@ import { BACKEND_URL, STORAGE_KEY } from './constants';
 
 function AppContent() {
   const { address, isConnected } = useAccount();
-  const [gameState, setGameState] = useState({
+  const [, setGameState] = useState({
     player1: null,
     player2: null,
     gameMode: null,

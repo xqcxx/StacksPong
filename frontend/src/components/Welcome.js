@@ -63,7 +63,7 @@ const Welcome = ({ setGameState, savedUsername, onUsernameSet }) => {
   const { practiceMode, isPending: isPracticePending, isSuccess: isPracticeSuccess } = usePracticeMode();
 
   // Challenge hooks
-  const { createChallenge, isSuccess: isChallengeCreated } = useCreateChallenge();
+  const { createChallenge } = useCreateChallenge();
   const { acceptChallenge, isPending: isAcceptChallengePending } = useAcceptChallenge();
   const [challenges, setChallenges] = useState([]);
 
@@ -80,7 +80,7 @@ const Welcome = ({ setGameState, savedUsername, onUsernameSet }) => {
         .catch(() => {});
     }, 5000);
     return () => clearInterval(interval);
-  }, [BACKEND_URL]);
+  }, []);
 
   useEffect(() => {
     if (!socket) {
@@ -221,7 +221,7 @@ const Welcome = ({ setGameState, savedUsername, onUsernameSet }) => {
 
       return () => clearTimeout(timer);
     }
-  }, [isStakingSuccess, pendingRoomCode, stakingTxHash, selectedStakeAmount, selectedCurrency, approvalStep, savedUsername, address, navigate, setGameState]);
+  }, [isStakingSuccess, pendingRoomCode, stakingTxHash, selectedStakeAmount, selectedCurrency, approvalStep, savedUsername, address, navigate, setGameState, createChallenge, makeChallengeAfterStake]);
 
   // Helper function to parse error messages
   const getErrorMessage = (error) => {
@@ -322,28 +322,6 @@ const Welcome = ({ setGameState, savedUsername, onUsernameSet }) => {
         submitButton.textContent = 'Continue';
       }
     };
-  };
-
-  const handleStartGame = () => {
-    promptUsername((username) => {
-      setGameState(prev => ({
-        ...prev,
-        player1: { name: username, rating: 800 },
-        gameMode: 'quick'
-      }));
-      navigate('/game', { state: { gameMode: 'quick' } });
-    });
-  };
-
-  const handleCreateRoom = () => {
-    promptUsername((username) => {
-      setGameState(prev => ({
-        ...prev,
-        player1: { name: username, rating: 800 },
-        gameMode: 'create'
-      }));
-      navigate('/game', { state: { gameMode: 'create' } });
-    });
   };
 
   const handleJoinRoom = () => {
