@@ -1,0 +1,8 @@
+{
+  "name": "stacks-pong-root",
+  "version": "0.0.0",
+  "scripts": {
+    "show:cors": "node backend/scripts/showCorsConfig.js",
+    "test:cors": "node backend/scripts/testCorsOrigins.js"
+  }
+}

@@ -1,0 +1,47 @@
+# PONG-IT Issue Tracker
+
+- [x] **Backend container needs MongoDB service** – `docker-compose.yml` starts only frontend and backend while `backend/src/server.js` connects to `mongodb://localhost:27017/pong-it`; add a MongoDB service and point the URI at it so the stack boots. _(Label: Bug)_
+  - [x] docker-compose adds Mongo container and volume
+- [ ] **Player service missing but still referenced everywhere** – Docs/backend still call `PLAYER_SERVICE_URL` yet no player-service exists, causing leaderboard calls to fail until the dependency or code is fixed. _(Label: Bug)_
+- [x] **Duplicate `getTopPlayers` breaks cached leaderboard** – `backend/src/gameHandlers.js` defines `getTopPlayers` twice; the async version overwrites the Map-based helper so every update hits the non-existent player-service. _(Label: Bug)_
+- [ ] **`POST /games` allows forged winners & signatures** – Anyone can POST arbitrary winners/staking data and the backend will generate a payout signature, enabling fund theft. _(Label: Security)_
+- [ ] **Player ratings can be self-assigned** – `POST /players` and `PATCH /players/:name/rating` accept arbitrary ratings/wins/losses without authentication, letting users inflate their ELO. _(Label: Security)_
+- [x] **Backend blocks CORS/WebSocket when `FRONTEND_URL` unset** – Express/Socket.IO cors configs deny access if the env variable isn’t provided, breaking local development. _(Label: Bug)_
+- [x] **Frontend cannot connect when `REACT_APP_BACKEND_URL` missing** – `BACKEND_URL` stays undefined and every fetch/socket call fails; add a default or validation. _(Label: Bug)_
+- [x] **Rematch accept routes to `/multiplayer` which doesn’t exist** – `GameOver` navigates to `/multiplayer` even though the router only defines `/game`, so accept rematch shows a blank screen. _(Label: Bug)_
+  - [x] Replace rematch navigation target with existing route
+- [ ] **Rematch sockets never reach the server** – The gameplay socket disconnects before `GameOver` opens a new socket, so backend handlers can’t find the room and rematches never start. _(Label: Bug)_
+- [x] **Socket handshake logs leak sensitive data** – `backend/src/server.js` logs entire request headers, exposing cookies/tokens in logs; remove or scrub them. _(Label: Security)_
+  - [x] Add env flag to disable header logging by default
+  - [x] Sanitize header output to safe keys only
+- [x] **Leaderboard never refreshes over WebSocket** – Frontend listens for `rankingsUpdate` while backend emits `leaderboardUpdate`, so live updates never arrive. _(Label: Bug)_
+- [ ] **Local leaderboard cache is never updated** – Ratings stored in `playerRankings` stay at 1000 because `updatePlayerRanking` isn’t called, so emitted data is wrong. _(Label: Bug)_
+- [ ] **Pause button permanently kills the game loop** – `updateGameState` returns `null` when paused, and the multiplayer loop treats it as game over, so play never resumes. _(Label: Bug)_
+- [ ] **Staked match winners never receive claim signatures** – The multiplayer flow updates `Game` records without calling `signatureService`, leaving `winnerSignature` empty and wins unclaimable. _(Label: Bug)_
+- [x] **“Load more” on My Wins discards previous results** – Pagination overwrites the `wins` array instead of appending, so users can’t scroll past the first page. _(Label: Bug)_
+- [x] **Game History pagination has the same overwrite problem** – History fetches replace the `games` state each time, preventing users from viewing older matches. _(Label: Bug)_
+- [x] **Prize amount shown is only half the real payout** – My Wins displays `stakeAmount` rather than 2× stake, underreporting rewards. _(Label: Bug)_
+- [ ] **Earnings stat ignores unclaimed wins and halves values** – `/games/player/:name/history` sums raw stakes and only counted when `claimed`, so statistics are inaccurate. _(Label: Bug)_
+- [ ] **Anyone can mark someone else’s win as claimed** – `POST /games/:id/claimed` accepts any `gameId` without verifying caller or on-chain tx, letting attackers disable another user’s claim. _(Label: Security)_
+- [ ] **Escrow room codes can never be reused** – `PongEscrow` never deletes match entries, so every six-character code is permanently burned, increasing collisions. _(Label: Bug)_
+- [ ] **Anyone can trigger staked matches without staking** – `player2StakeCompleted` doesn’t verify the sender or on-chain deposits, so a random socket can start the game unpaid. _(Label: Security)_
+- [ ] **Client-generated staked room codes can brick escrowed ETH** – The frontend generates codes after submitting the transaction and doesn’t check uniqueness, so a collision leaves Player 1’s stake orphaned. _(Label: Bug)_
+- [ ] **Duplicate custom room codes crash the backend** – `createRoomWithCode` throws if the code exists and `handleCreateRoom` doesn’t catch it, so malicious clients can crash the server. _(Label: Bug)_
+- [ ] **Legacy `GameHandlers` still run alongside the new flow** – `server.js` wires both handlers, causing duplicate event processing and unexpected disconnects from the obsolete logic. _(Label: Bug)_
+- [ ] **Paddle positions are never validated on the server** – `gameManager.updatePaddle` trusts client-sent values, so cheaters can send impossible positions or NaN to break physics. _(Label: Security)_
+- [ ] **Reloading `/game` silently queues a random match** – Without `location.state`, `gameMode` defaults to `quick`, so refreshing a private/staked lobby abandons the intended room. _(Label: Bug)_
+- [x] **Audio files break when the app isn’t hosted at the root** – Absolute paths like `/sounds/hit2.mp3` fail under subpaths; use relative URLs so audio works everywhere. _(Label: Bug)_
+  - [x] Use PUBLIC_URL-aware audio paths
+- [ ] **Escrow contract address is hard-coded** – `frontend/src/contracts/PongEscrow.js` bakes a single address/ABI, making environment changes require code edits. _(Label: Enhancement)_
+- [ ] **Staked game persistence failures are ignored** – After Player 1 stakes, the UI doesn’t handle `/games` write errors, so matches can be missing server-side data. _(Label: Bug)_
+- [ ] **Block explorer link is hard-wired to Lisk Sepolia** – Claim history always links to `sepolia-blockscout.lisk.com`, breaking navigation on other networks. _(Label: Enhancement)_
+- [ ] **Wallet transactions aren’t gated by chain ID** – Wagmi config uses `liskSepolia`, but staking/claim hooks don’t enforce `chainId`, so wallets on other networks send funds to the wrong address. _(Label: Security)_
+- [ ] **`/games` endpoint lets anyone spam fake matches** – Since it takes arbitrary payloads without auth, attackers can flood the DB with bogus games. _(Label: Security)_
+- [ ] **Username length unchecked on the server** – `POST /players` accepts unbounded names, allowing huge inputs that slow MongoDB; enforce the 2–15 character limit. _(Label: Security)_
+- [ ] **History endpoints accept unbounded `limit` values** – Clients can request enormous page sizes, forcing large Mongo queries that hang the server. _(Label: Bug)_
+- [ ] **Spectator sets can contain duplicates** – `roomManager.addSpectator` inserts objects into a `Set`, so reconnects add duplicates and inflate spectator counts. _(Label: Bug)_
+- [ ] **Spectators aren’t detached when a room ends** – `endGame` removes host/guest but not spectators, leaving sockets subscribed to ghost rooms and leaking memory. _(Label: Bug)_
+- [ ] **“Ready” rooms never expire** – Cleanup only targets `waiting` rooms, so code-ready rooms stuck before start remain forever and clutter the lobby. _(Label: Bug)_
+- [ ] **GameOver page crashes if stats are missing** – Component assumes `result.stats` exists, so any backend error that omits it causes a render crash. _(Label: Bug)_
+- [ ] **Prize display shows the stake, not the payout** – My Wins repeats the stake (string) instead of formatting the actual 2× ETH reward, confusing players. _(Label: Bug)_
+- [ ] **Staked matches start without verifying on-chain deposits** – Before launching gameplay the backend never confirms the contract has two stakes, so Player 1 can be forced to play after the opponent skipped funding. _(Label: Security)_

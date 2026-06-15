@@ -1,0 +1,15 @@
+[project]
+name = "stacks-pong"
+description = "Stacks-native escrow and engagement contract for StacksPong"
+authors = []
+telemetry = false
+cache_dir = "./.cache"
+
+[contracts.pong-escrow]
+path = "contracts/pong-escrow.clar"
+clarity_version = 4
+epoch = "3.3"
+
+[repl.analysis]
+passes = ["check_checker"]
+check_checker = { trusted_sender = false, trusted_caller = false, callee_filter = false }

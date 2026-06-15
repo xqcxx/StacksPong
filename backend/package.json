@@ -1,0 +1,27 @@
+{
+  "name": "stacks-pong-backend",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.18.3",
+  "dependencies": {
+    "@scure/bip32": "^2.2.0",
+    "@scure/bip39": "^2.2.0",
+    "@stacks/network": "^7.3.1",
+    "@stacks/transactions": "^7.3.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.17.1",
+    "mongoose": "^6.0.13",
+    "node-fetch": "^2.6.7",
+    "socket.io": "^4.4.0",
+    "uuid": "^9.0.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}

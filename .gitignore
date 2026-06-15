@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+.env.key
+!.env.example
+.gitmodules
+package-lock.json
+build/
+.cache/
+coverage/
+blockchain/deployments/default.simnet-plan.yaml
+
+# Automation scripts and their wallet/runtime data are private.
+scripts/
+.vercel
