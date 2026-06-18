@@ -172,6 +172,16 @@
   font-weight: 900;
 }
 
+.landing-network-strip {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  color: #9ca7b8;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
 .landing-court {
   position: relative;
   min-height: 420px;
@@ -267,9 +277,26 @@
   padding: 82px 0;
 }
 
+.landing-band {
+  width: 100%;
+  max-width: none;
+  padding-left: max(16px, calc((100vw - 1180px) / 2));
+  padding-right: max(16px, calc((100vw - 1180px) / 2));
+  background: rgba(7, 8, 14, 0.72);
+  border-top: 1px solid rgba(116, 113, 203, 0.22);
+  border-bottom: 1px solid rgba(116, 113, 203, 0.22);
+}
+
 .landing-section-heading {
   max-width: 760px;
   margin-bottom: 34px;
+}
+
+.landing-section-copy {
+  margin: 22px 0 0;
+  color: #b8bdcf;
+  font-size: 1.05rem;
+  line-height: 1.75;
 }
 
 .landing-section h2,
@@ -279,13 +306,23 @@
   line-height: 1.15;
 }
 
+.landing-two-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 440px);
+  gap: 36px;
+  align-items: start;
+}
+
 .landing-step-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 
-.landing-step {
+.landing-step,
+.landing-mode,
+.landing-dashboard-item,
+.landing-faq {
   border: 1px solid rgba(116, 113, 203, 0.48);
   border-radius: 8px;
   padding: 22px;
@@ -310,6 +347,82 @@
   line-height: 1.7;
 }
 
+.landing-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.landing-mode h3,
+.landing-faq h3 {
+  margin: 0 0 12px;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.landing-mode p,
+.landing-faq p,
+.landing-dashboard-item p {
+  margin: 0;
+  color: #b8bdcf;
+  line-height: 1.7;
+}
+
+.landing-contract-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+  border: 1px solid rgba(247, 147, 26, 0.48);
+  border-radius: 8px;
+  padding: 18px;
+  background: rgba(247, 147, 26, 0.08);
+  overflow-wrap: anywhere;
+}
+
+.landing-contract-panel span {
+  color: #f7931a;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.landing-contract-panel a,
+.landing-contract-panel strong {
+  color: #f7f8ff;
+  font-weight: 900;
+}
+
+.landing-check-list {
+  display: grid;
+  gap: 12px;
+}
+
+.landing-check-list p {
+  margin: 0;
+  border: 1px solid rgba(53, 208, 127, 0.32);
+  border-radius: 8px;
+  padding: 16px;
+  background: rgba(53, 208, 127, 0.08);
+  color: #d7ffe5;
+  line-height: 1.65;
+}
+
+.landing-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.landing-dashboard-item {
+  border-color: rgba(53, 208, 127, 0.34);
+}
+
+.landing-faq-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
 .landing-final {
   padding: 72px 0 96px;
 }
@@ -320,7 +433,11 @@
 
 @media (max-width: 900px) {
   .landing-hero-grid,
-  .landing-step-grid {
+  .landing-step-grid,
+  .landing-two-column,
+  .landing-mode-grid,
+  .landing-dashboard-grid,
+  .landing-faq-grid {
     grid-template-columns: 1fr;
   }
 
