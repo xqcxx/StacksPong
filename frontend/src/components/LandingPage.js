@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LOBBY_ROUTE } from '../constants';
+import { BACKEND_URL, LOBBY_ROUTE } from '../constants';
 import { CURRENCIES } from '../config/currencies';
 import { BLOCK_EXPLORER_URL, PONG_CONTRACT_ID, STACKS_NETWORK } from '../config/env';
 import '../styles/LandingPage.css';
@@ -95,6 +95,46 @@ const contractHref = PONG_CONTRACT_ID && BLOCK_EXPLORER_URL
   : null;
 
 function LandingPage() {
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [challenges, setChallenges] = useState([]);
+  const [loadingLiveData, setLoadingLiveData] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadLiveData() {
+      setLoadingLiveData(true);
+      try {
+        const [leaderboardResponse, challengesResponse] = await Promise.allSettled([
+          fetch(`${BACKEND_URL}/api/rankings/top?limit=5`),
+          fetch(`${BACKEND_URL}/games/challenges`)
+        ]);
+
+        if (!isMounted) return;
+
+        if (leaderboardResponse.status === 'fulfilled' && leaderboardResponse.value.ok) {
+          const players = await leaderboardResponse.value.json();
+          setLeaderboard(Array.isArray(players) ? players : []);
+        }
+
+        if (challengesResponse.status === 'fulfilled' && challengesResponse.value.ok) {
+          const openChallenges = await challengesResponse.value.json();
+          setChallenges(Array.isArray(openChallenges) ? openChallenges : []);
+        }
+      } catch (error) {
+        console.error('Unable to load landing page live data:', error);
+      } finally {
+        if (isMounted) setLoadingLiveData(false);
+      }
+    }
+
+    loadLiveData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <main className="landing-page">
       <section className="landing-hero" aria-labelledby="landing-title">
@@ -141,6 +181,49 @@ function LandingPage() {
             <div className="landing-ticket">
               <span>Escrowed pot</span>
               <strong>2.0 STX</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-section landing-live" aria-labelledby="live-title">
+        <div className="landing-section-heading">
+          <p className="landing-kicker">Live highlights</p>
+          <h2 id="live-title">See the lobby pulse before you enter.</h2>
+        </div>
+        <div className="landing-live-grid">
+          <div className="landing-panel">
+            <div className="landing-panel-title">
+              <h3>Top players</h3>
+              <span>{leaderboard.length ? `${leaderboard.length} loaded` : 'Leaderboard'}</span>
+            </div>
+            <div className="landing-list">
+              {leaderboard.length > 0 ? leaderboard.map((player, index) => (
+                <div className="landing-row" key={player.name || index}>
+                  <span>{index + 1}</span>
+                  <strong>{player.name || 'Unknown'}</strong>
+                  <em>{player.rating || 1000}</em>
+                </div>
+              )) : (
+                <p className="landing-empty">{loadingLiveData ? 'Loading top players...' : 'No ranked players yet.'}</p>
+              )}
+            </div>
+          </div>
+          <div className="landing-panel">
+            <div className="landing-panel-title">
+              <h3>Open challenges</h3>
+              <span>{challenges.length ? `${challenges.length} waiting` : 'Challenge board'}</span>
+            </div>
+            <div className="landing-list">
+              {challenges.length > 0 ? challenges.slice(0, 5).map(challenge => (
+                <div className="landing-row" key={challenge.roomCode}>
+                  <span>{challenge.roomCode}</span>
+                  <strong>{challenge.stakeAmount || 'Open'} STX</strong>
+                  <em>Waiting</em>
+                </div>
+              )) : (
+                <p className="landing-empty">{loadingLiveData ? 'Checking challenge board...' : 'No public challenges right now.'}</p>
+              )}
             </div>
           </div>
         </div>
