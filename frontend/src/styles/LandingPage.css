@@ -277,6 +277,10 @@
   padding: 82px 0;
 }
 
+.landing-live {
+  padding-top: 42px;
+}
+
 .landing-band {
   width: 100%;
   max-width: none;
@@ -317,6 +321,89 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
+}
+
+.landing-live-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.landing-panel {
+  border: 1px solid rgba(116, 113, 203, 0.48);
+  border-radius: 8px;
+  padding: 20px;
+  background: rgba(10, 12, 20, 0.84);
+}
+
+.landing-panel-title,
+.landing-row {
+  display: grid;
+  align-items: center;
+  gap: 14px;
+}
+
+.landing-panel-title {
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-bottom: 14px;
+}
+
+.landing-panel-title h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.landing-panel-title span {
+  color: #f7931a;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.landing-list {
+  display: grid;
+  gap: 10px;
+}
+
+.landing-row {
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  min-height: 52px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.landing-row span {
+  color: #f7931a;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 0.68rem;
+  overflow-wrap: anywhere;
+}
+
+.landing-row strong {
+  color: #f7f8ff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.landing-row em {
+  color: #7ff0ad;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.landing-empty {
+  min-height: 110px;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  border: 1px dashed rgba(116, 113, 203, 0.42);
+  border-radius: 8px;
+  color: #9ca7b8;
+  line-height: 1.6;
+  text-align: center;
 }
 
 .landing-step,
@@ -434,6 +521,7 @@
 @media (max-width: 900px) {
   .landing-hero-grid,
   .landing-step-grid,
+  .landing-live-grid,
   .landing-two-column,
   .landing-mode-grid,
   .landing-dashboard-grid,
@@ -494,5 +582,15 @@
 
   .landing-score {
     font-size: 0.58rem;
+  }
+
+  .landing-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .landing-row strong {
+    white-space: normal;
   }
 }
