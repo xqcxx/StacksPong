@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { LOBBY_ROUTE } from '../constants';
 import { CURRENCIES } from '../config/currencies';
+import { BLOCK_EXPLORER_URL, PONG_CONTRACT_ID, STACKS_NETWORK } from '../config/env';
 import '../styles/LandingPage.css';
 
 const currencySymbols = Object.values(CURRENCIES).map(currency => currency.symbol);
@@ -24,6 +25,74 @@ const howItWorks = [
     body: 'Win the Pong match, then claim the 2x STX pot after the backend signs the final result.'
   }
 ];
+
+const modes = [
+  {
+    title: 'Staked Match',
+    body: 'Create a room, escrow STX, and invite an opponent to match your stake before play starts.'
+  },
+  {
+    title: 'Public Challenge',
+    body: 'Publish a staked room on the challenge board so another player can accept it from the lobby.'
+  },
+  {
+    title: 'Join Room',
+    body: 'Enter a 6-character room code to join a private match or complete an existing staked room.'
+  },
+  {
+    title: 'Watch Live',
+    body: 'Spectate active matches from the lobby when live games are available.'
+  },
+  {
+    title: 'Practice and Check-In',
+    body: 'Record practice, check-in, and daily reward actions as on-chain engagement events.'
+  }
+];
+
+const safeguards = [
+  'STX stakes are held by the pong-escrow Clarity contract while a staked match is waiting, active, refundable, or claimable.',
+  'If player two never joins, player one can refund the unmatched stake after the 10-minute join timeout.',
+  'If an active staked match is abandoned, both players can be refunded with backend authorization.',
+  'Prize claims require the winning Stacks wallet and a backend-signed final result.'
+];
+
+const dashboardItems = [
+  'Game history with win, loss, casual, and staked filters.',
+  'Claimable wins with claimed transaction links.',
+  'Pending stakes with refund countdowns and active match recovery.',
+  'Leaderboard and ELO tracking for competitive play.'
+];
+
+const faqs = [
+  {
+    question: 'Which wallets are supported?',
+    answer: 'StacksPong uses Stacks Connect, so players use compatible Stacks wallets that can sign messages and submit contract calls.'
+  },
+  {
+    question: 'Which token can be staked?',
+    answer: 'This version supports STX staking only. Both players must stake the same STX amount for a staked match.'
+  },
+  {
+    question: 'What happens if nobody joins?',
+    answer: 'The player-one stake remains in escrow until the 10-minute join timeout passes, then it can be refunded from Pending Stakes.'
+  },
+  {
+    question: 'What happens on disconnect?',
+    answer: 'Staked matches track reconnect windows. If reconnect windows expire and the backend marks the match abandoned, both players can recover their stakes.'
+  },
+  {
+    question: 'How does claiming work?',
+    answer: 'The winner claims the 2x STX pot with the winning wallet after the backend signs the match result.'
+  },
+  {
+    question: 'Why is a wallet signature required?',
+    answer: 'Wallet signatures prove account ownership for username and session flows. They do not move STX by themselves.'
+  }
+];
+
+const contractHref = PONG_CONTRACT_ID && BLOCK_EXPLORER_URL
+  ? `${BLOCK_EXPLORER_URL}/address/${PONG_CONTRACT_ID}?chain=${STACKS_NETWORK}`
+  : null;
 
 function LandingPage() {
   return (
@@ -55,6 +124,10 @@ function LandingPage() {
             <div className="landing-token-strip" aria-label="Supported staking tokens">
               {currencySymbols.map(symbol => <span key={symbol}>{symbol}</span>)}
             </div>
+            <div className="landing-network-strip" aria-label="Stacks network and contract">
+              <span>Network: {STACKS_NETWORK}</span>
+              <span>Contract: {PONG_CONTRACT_ID || 'Configured by environment'}</span>
+            </div>
           </div>
 
           <div className="landing-court" aria-label="StacksPong staked match preview">
@@ -84,6 +157,72 @@ function LandingPage() {
               <span>{String(index + 1).padStart(2, '0')}</span>
               <h3>{item.title}</h3>
               <p>{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-section landing-band" aria-labelledby="modes-title">
+        <div className="landing-section-heading">
+          <p className="landing-kicker">Game modes</p>
+          <h2 id="modes-title">Play, challenge, spectate, and keep your streak alive.</h2>
+        </div>
+        <div className="landing-mode-grid">
+          {modes.map(mode => (
+            <article className="landing-mode" key={mode.title}>
+              <h3>{mode.title}</h3>
+              <p>{mode.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-section landing-two-column" id="escrow" aria-labelledby="escrow-title">
+        <div>
+          <p className="landing-kicker">Escrow and safety</p>
+          <h2 id="escrow-title">STX stays in contract-controlled escrow.</h2>
+          <p className="landing-section-copy">
+            StacksPong uses the pong-escrow Clarity contract for staked matches. The app records room
+            state in the backend, but STX movement happens through Stacks wallet transactions.
+          </p>
+          <div className="landing-contract-panel">
+            <span>{STACKS_NETWORK}</span>
+            {contractHref ? (
+              <a href={contractHref} target="_blank" rel="noopener noreferrer">{PONG_CONTRACT_ID}</a>
+            ) : (
+              <strong>{PONG_CONTRACT_ID || 'Contract configured by environment'}</strong>
+            )}
+          </div>
+        </div>
+        <div className="landing-check-list">
+          {safeguards.map(item => <p key={item}>{item}</p>)}
+        </div>
+      </section>
+
+      <section className="landing-section" aria-labelledby="dashboard-title">
+        <div className="landing-section-heading">
+          <p className="landing-kicker">Player dashboard</p>
+          <h2 id="dashboard-title">Everything a staked player needs after the match.</h2>
+        </div>
+        <div className="landing-dashboard-grid">
+          {dashboardItems.map(item => (
+            <article className="landing-dashboard-item" key={item}>
+              <p>{item}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-section landing-band" id="faq" aria-labelledby="faq-title">
+        <div className="landing-section-heading">
+          <p className="landing-kicker">FAQ</p>
+          <h2 id="faq-title">Straight answers before you stake.</h2>
+        </div>
+        <div className="landing-faq-grid">
+          {faqs.map(item => (
+            <article className="landing-faq" key={item.question}>
+              <h3>{item.question}</h3>
+              <p>{item.answer}</p>
             </article>
           ))}
         </div>
