@@ -34,6 +34,7 @@ export const STACKS_TESTNET_CHAIN_ID = 2147483648;
 // Native currency
 export const NATIVE_CURRENCY_SYMBOL = 'STX';
 
+export const LOBBY_ROUTE = '/play';
 export const REMATCH_ROUTE = '/game';
 // Base path for static assets (supports subpath hosting)
 export const PUBLIC_URL = process.env.PUBLIC_URL || '';
