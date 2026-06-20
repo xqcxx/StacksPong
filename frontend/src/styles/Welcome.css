@@ -25,6 +25,173 @@
   transform: translateY(0);
 }
 
+.terminal-hero {
+  width: min(1120px, 100%);
+  margin: 6rem auto 2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
+  gap: 1rem;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: all 0.5s ease-out;
+  text-align: left;
+}
+
+.terminal-hero.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.terminal-hero__screen,
+.terminal-hero__sidecar {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid rgba(53, 208, 127, 0.72);
+  background:
+    linear-gradient(rgba(53, 208, 127, 0.035) 50%, transparent 50%),
+    radial-gradient(circle at top left, rgba(53, 208, 127, 0.2), transparent 26rem),
+    #020403;
+  background-size: 100% 6px, auto, auto;
+  box-shadow: 0 0 28px rgba(53, 208, 127, 0.18), inset 0 0 36px rgba(53, 208, 127, 0.08);
+}
+
+.terminal-hero__screen::after,
+.terminal-hero__sidecar::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px dashed rgba(53, 208, 127, 0.28);
+  pointer-events: none;
+}
+
+.terminal-hero__chrome {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgba(53, 208, 127, 0.36);
+  color: #35d07f;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.58rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.terminal-hero__content {
+  position: relative;
+  z-index: 1;
+  min-height: 420px;
+  padding: clamp(2rem, 5vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.terminal-hero__eyebrow {
+  margin: 0 0 1rem;
+  color: #d7ff5f;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.terminal-hero h1 {
+  margin: 0;
+  color: #f4fff8;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(1.6rem, 4vw, 3.45rem);
+  line-height: 1.18;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(53, 208, 127, 0.55);
+}
+
+.terminal-hero__copy {
+  max-width: 700px;
+  margin: 1.4rem 0 0;
+  color: #b9d7c4;
+  font-size: 0.78rem;
+  line-height: 1.85;
+}
+
+.terminal-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 2rem;
+}
+
+.terminal-action,
+.terminal-style-link {
+  border-radius: 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.terminal-action {
+  padding: 1rem 1.2rem;
+  border: 1px solid #35d07f;
+  box-shadow: 5px 5px 0 rgba(53, 208, 127, 0.12);
+}
+
+.terminal-action--primary {
+  background: #35d07f;
+  color: #020403;
+}
+
+.terminal-action--secondary {
+  background: transparent;
+  color: #d7ff5f;
+}
+
+.terminal-action:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.terminal-hero__sidecar {
+  position: relative;
+  z-index: 1;
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.85rem;
+}
+
+.terminal-status-line {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem;
+  border: 1px solid rgba(53, 208, 127, 0.28);
+  background: rgba(53, 208, 127, 0.055);
+}
+
+.terminal-status-line span {
+  color: #6d8a78;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.terminal-status-line strong {
+  color: #35d07f;
+  font-size: 0.66rem;
+  line-height: 1.5;
+}
+
+.terminal-style-link {
+  position: relative;
+  z-index: 1;
+  padding: 0.9rem 1rem;
+  border: 1px solid #d7ff5f;
+  background: rgba(215, 255, 95, 0.1);
+  color: #d7ff5f;
+  cursor: pointer;
+}
+
 .game-title {
   font-family: 'Press Start 2P', monospace;
   font-size: 4rem;
@@ -380,6 +547,29 @@ html, body {
     min-height: 100vh;
   }
 
+  .terminal-hero {
+    grid-template-columns: 1fr;
+    margin-top: 5.5rem;
+  }
+
+  .terminal-hero__chrome {
+    flex-direction: column;
+  }
+
+  .terminal-hero__content {
+    min-height: 360px;
+    padding: 2rem 1.2rem;
+  }
+
+  .terminal-hero__actions {
+    flex-direction: column;
+  }
+
+  .terminal-action,
+  .terminal-style-link {
+    width: 100%;
+  }
+
   .game-title {
     font-size: 2.5rem;
     letter-spacing: 0.3rem;
@@ -435,6 +625,20 @@ html, body {
 }
 
 @media (max-width: 480px) {
+  .terminal-hero {
+    margin-top: 6rem;
+  }
+
+  .terminal-hero h1 {
+    font-size: 1.35rem;
+  }
+
+  .terminal-hero__copy,
+  .terminal-action,
+  .terminal-style-link {
+    font-size: 0.62rem;
+  }
+
   .game-title {
     font-size: 2rem;
     letter-spacing: 0.2rem;
