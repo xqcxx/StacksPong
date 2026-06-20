@@ -720,43 +720,64 @@ const Welcome = ({ setGameState, savedUsername, onUsernameSet }) => {
         </div>
       )}
 
-      <div className={`title-container ${showTitle ? "show" : ""}`}>
-        <h1 className="game-title">PONG-IT</h1>
-        <div className="title-glow"></div>
-      </div>
-
-      <div className="menu">
-        <div className="game-modes">
-          {/* <button onClick={handleStartGame} className="mode-button quick-match">
-            <span className="button-icon">⚡</span>
-            <span className="button-text">Quick Match</span>
-          </button> */}
-          {/* <button onClick={handleCreateRoom} className="mode-button create-room">
-            <span className="button-icon">➕</span>
-            <span className="button-text">Create Room</span>
-          </button> */}
+      <section className={`terminal-hero ${showTitle ? "show" : ""}`}>
+        <div className="terminal-hero__screen">
+          <div className="terminal-hero__chrome">
+            <span>PONG-IT://ESCROW_TERMINAL</span>
+            <span>{isConnected ? "WALLET_LINKED" : "AWAITING_WALLET"}</span>
+          </div>
+          <div className="terminal-hero__content">
+            <p className="terminal-hero__eyebrow">Stacks-native arcade staking</p>
+            <h1>Challenge Accepted. Funds Locked.</h1>
+            <p className="terminal-hero__copy">
+              Enter a low-latency Pong duel, stake STX through escrow, and let the winner claim the full 2x pot.
+            </p>
+            <div className="terminal-hero__actions">
+              <button
+                onClick={handleCreateStakedMatch}
+                disabled={!isConnected}
+                className="terminal-action terminal-action--primary"
+              >
+                {isConnected || inMiniPay ? "Start Staked Match" : "Connect Wallet First"}
+              </button>
+              <button
+                onClick={handleJoinRoom}
+                disabled={!isConnected}
+                className="terminal-action terminal-action--secondary"
+              >
+                Join Room
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="terminal-hero__sidecar">
+          <div className="terminal-status-line">
+            <span>AUTH</span>
+            <strong>{savedUsername || (isConnected ? "NAME_REQUIRED" : "OFFLINE")}</strong>
+          </div>
+          <div className="terminal-status-line">
+            <span>ESCROW</span>
+            <strong>STX READY</strong>
+          </div>
+          <div className="terminal-status-line">
+            <span>PAYOUT</span>
+            <strong>2X WINNER CLAIM</strong>
+          </div>
+          <div className="terminal-status-line">
+            <span>ENGINE</span>
+            <strong>60 FPS SOCKET.IO</strong>
+          </div>
           <button
-            onClick={handleJoinRoom}
-            disabled={!isConnected}
-            className="mode-button join-room"
+            type="button"
+            className="terminal-style-link"
+            onClick={() => navigate("/ui-concepts")}
           >
-            <span className="button-icon">🔗</span>
-            <span className="button-text">Join Room</span>
-          </button>
-          <button
-            onClick={handleCreateStakedMatch}
-            className="mode-button staked-match"
-            disabled={!isConnected}
-          >
-            <span className="button-icon">💎</span>
-            <span className="button-text">
-              {isConnected || inMiniPay
-                ? "Staked Match"
-                : "Connect Wallet First"}
-            </span>
+            View Style Board
           </button>
         </div>
+      </section>
 
+      <div className="menu">
         {/* Transaction Status Overlay */}
         {stakingInProgress && (
           <div className="transaction-overlay">
