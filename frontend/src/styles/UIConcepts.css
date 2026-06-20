@@ -1,0 +1,433 @@
+.ui-concepts {
+  min-height: 100vh;
+  padding: 28px;
+  overflow-x: hidden;
+  color: #f8fbff;
+  background:
+    radial-gradient(circle at top left, rgba(124, 60, 255, 0.28), transparent 34rem),
+    radial-gradient(circle at bottom right, rgba(0, 245, 255, 0.18), transparent 30rem),
+    #05020d;
+  font-family: "Press Start 2P", monospace;
+}
+
+.ui-concepts,
+.ui-concepts * {
+  box-sizing: border-box;
+}
+
+.ui-concepts button {
+  font-family: inherit;
+}
+
+.ui-concepts__header {
+  width: min(1180px, 100%);
+  margin: 0 auto 26px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.ui-concepts__back,
+.concept-hero-panel__actions button {
+  border: 1px solid rgba(253, 208, 64, 0.86);
+  border-radius: 0;
+  background: #fdd040;
+  color: #08040e;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.7);
+}
+
+.ui-concepts__back {
+  padding: 12px 14px;
+  font-size: 0.62rem;
+}
+
+.ui-concepts__eyebrow {
+  margin: 0 0 12px;
+  color: #00f5ff;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ui-concepts h1 {
+  max-width: 880px;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.6rem, 4vw, 3.5rem);
+  line-height: 1.18;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(0, 245, 255, 0.45), 0 0 34px rgba(124, 60, 255, 0.55);
+}
+
+.ui-concepts__intro {
+  max-width: 760px;
+  margin: 16px 0 0;
+  color: #c9d4ff;
+  font-size: 0.72rem;
+  line-height: 1.8;
+}
+
+.ui-concepts__stage {
+  width: min(1180px, 100%);
+  margin: 0 auto 28px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
+  gap: 18px;
+}
+
+.concept-hero-panel,
+.concept-style-notes,
+.concept-card {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(5, 8, 18, 0.74);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.concept-hero-panel::before,
+.concept-style-notes::before,
+.concept-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(rgba(255, 255, 255, 0.035) 50%, transparent 50%);
+  background-size: 100% 6px;
+  mix-blend-mode: screen;
+  opacity: 0.44;
+}
+
+.concept-hero-panel {
+  min-height: 430px;
+  padding: clamp(24px, 5vw, 54px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.concept-hero-panel::after {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
+
+.concept-hero-panel__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+  color: #b9c7ff;
+  font-size: 0.62rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.concept-hero-panel__meta strong {
+  color: #fdd040;
+  text-align: right;
+}
+
+.concept-hero-panel h2 {
+  max-width: 780px;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.4rem, 4vw, 3.1rem);
+  line-height: 1.18;
+  text-transform: uppercase;
+}
+
+.concept-hero-panel p,
+.concept-style-notes li,
+.concept-card p {
+  color: #d8ddf2;
+  font-size: 0.68rem;
+  line-height: 1.8;
+}
+
+.concept-hero-panel p {
+  max-width: 690px;
+  margin: 18px 0 0;
+}
+
+.concept-hero-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.concept-hero-panel__actions button {
+  padding: 14px 18px;
+  font-size: 0.68rem;
+}
+
+.concept-hero-panel__actions button:nth-child(2) {
+  background: transparent;
+  color: #fff;
+  border-color: currentColor;
+}
+
+.concept-hero-panel__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.concept-hero-panel__stats span {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fdd040;
+  font-size: 0.56rem;
+  text-transform: uppercase;
+}
+
+.concept-style-notes {
+  padding: 24px;
+}
+
+.concept-style-notes h3 {
+  margin: 0 0 18px;
+  color: #00f5ff;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.concept-style-notes ul {
+  position: relative;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.concept-style-notes li {
+  padding: 13px 0 13px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.concept-style-notes li::before {
+  content: ">";
+  margin-left: -20px;
+  margin-right: 10px;
+  color: #fdd040;
+}
+
+.ui-concepts__grid {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.concept-card {
+  min-height: 320px;
+  padding: 16px;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.concept-card:hover,
+.concept-card.is-active {
+  transform: translateY(-6px);
+  border-color: #fdd040;
+  box-shadow: 0 0 0 1px rgba(253, 208, 64, 0.5), 0 24px 90px rgba(0, 0, 0, 0.6);
+}
+
+.concept-card__topline {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #fdd040;
+  font-size: 0.54rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.concept-card__arena {
+  position: relative;
+  z-index: 1;
+  height: 112px;
+  margin: 18px 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background:
+    linear-gradient(90deg, transparent 49%, rgba(255, 255, 255, 0.22) 50%, transparent 51%),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.16), transparent 34%),
+    rgba(0, 0, 0, 0.26);
+}
+
+.concept-paddle,
+.concept-ball {
+  position: absolute;
+  box-shadow: 0 0 16px currentColor;
+}
+
+.concept-paddle {
+  width: 8px;
+  height: 48px;
+  top: 32px;
+  color: #00f5ff;
+  background: currentColor;
+}
+
+.concept-paddle--left {
+  left: 16px;
+}
+
+.concept-paddle--right {
+  right: 16px;
+  top: 54px;
+}
+
+.concept-ball {
+  width: 13px;
+  height: 13px;
+  left: 56%;
+  top: 42px;
+  color: #fdd040;
+  background: currentColor;
+}
+
+.concept-card h2 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: #fff;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  text-transform: uppercase;
+}
+
+.concept-card p {
+  position: relative;
+  z-index: 1;
+  margin: 12px 0 14px;
+  font-size: 0.58rem;
+}
+
+.concept-palette {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 8px;
+}
+
+.concept-palette span {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.14);
+}
+
+.concept-card--neon-grid {
+  background:
+    linear-gradient(rgba(0, 245, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 60, 255, 0.14) 1px, transparent 1px),
+    radial-gradient(circle at 50% 20%, rgba(124, 60, 255, 0.5), transparent 26rem),
+    #070012;
+  background-size: 36px 36px, 36px 36px, auto, auto;
+}
+
+.concept-card--terminal-noir {
+  background:
+    linear-gradient(135deg, rgba(53, 208, 127, 0.14), transparent 42%),
+    #020403;
+}
+
+.concept-card--terminal-noir .concept-paddle,
+.concept-card--terminal-noir .concept-card__topline,
+.concept-card--terminal-noir + .concept-style-notes h3 {
+  color: #35d07f;
+}
+
+.concept-card--tokyo-cabinet {
+  background:
+    linear-gradient(130deg, rgba(255, 43, 214, 0.36), transparent 35%),
+    linear-gradient(310deg, rgba(53, 208, 255, 0.22), transparent 42%),
+    #130014;
+}
+
+.concept-card--vector-vault {
+  background:
+    radial-gradient(circle at top right, rgba(91, 124, 255, 0.42), transparent 18rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), transparent),
+    #070b18;
+}
+
+.concept-card--redline-riot {
+  background:
+    repeating-linear-gradient(-45deg, rgba(255, 59, 59, 0.12) 0 10px, transparent 10px 22px),
+    radial-gradient(circle at center, rgba(255, 59, 59, 0.36), transparent 24rem),
+    #120606;
+}
+
+.ui-concepts.concept-card--terminal-noir {
+  background: radial-gradient(circle at top left, rgba(53, 208, 127, 0.25), transparent 32rem), #020403;
+}
+
+.ui-concepts.concept-card--tokyo-cabinet {
+  background: radial-gradient(circle at top left, rgba(255, 43, 214, 0.28), transparent 34rem), radial-gradient(circle at bottom right, rgba(53, 208, 255, 0.2), transparent 30rem), #130014;
+}
+
+.ui-concepts.concept-card--vector-vault {
+  background: radial-gradient(circle at top right, rgba(91, 124, 255, 0.32), transparent 34rem), #070b18;
+}
+
+.ui-concepts.concept-card--redline-riot {
+  background: radial-gradient(circle at top left, rgba(255, 59, 59, 0.28), transparent 34rem), #120606;
+}
+
+@media (max-width: 1050px) {
+  .ui-concepts__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ui-concepts__stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .ui-concepts {
+    padding: 18px 12px;
+  }
+
+  .ui-concepts__header {
+    grid-template-columns: 1fr;
+  }
+
+  .ui-concepts__back {
+    width: fit-content;
+  }
+
+  .concept-hero-panel {
+    min-height: 380px;
+  }
+
+  .concept-hero-panel__meta {
+    flex-direction: column;
+  }
+
+  .concept-hero-panel__meta strong {
+    text-align: left;
+  }
+
+  .concept-hero-panel__actions button {
+    width: 100%;
+  }
+
+  .ui-concepts__grid {
+    grid-template-columns: 1fr;
+  }
+}
