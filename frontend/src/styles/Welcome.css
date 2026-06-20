@@ -759,6 +759,25 @@ body .welcome,
   box-shadow: 0 0 20px rgba(116, 113, 203, 0.5);
 }
 
+.ui-concepts-btn {
+  background: rgba(0, 245, 255, 0.16);
+  color: #00f5ff;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.78rem;
+  border: 2px solid #00f5ff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Press Start 2P', monospace;
+  white-space: nowrap;
+}
+
+.ui-concepts-btn:hover {
+  background: rgba(0, 245, 255, 0.26);
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.45);
+}
+
 /* Staked Match Button - Match other buttons */
 .mode-button.staked-match {
   background: rgb(116,113,203);

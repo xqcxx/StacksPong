@@ -642,6 +642,12 @@ const Welcome = ({ setGameState, savedUsername, onUsernameSet }) => {
             📊 History
           </button>
         )}
+        <button
+          onClick={() => navigate("/ui-concepts")}
+          className="ui-concepts-btn"
+        >
+          UI Concepts
+        </button>
       </div>
 
       {/* Engagement Buttons */}
