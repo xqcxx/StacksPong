@@ -1,322 +1,186 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import useScrollReveal from '../hooks/useScrollReveal';
 import { BACKEND_URL, LOBBY_ROUTE } from '../constants';
 import { CURRENCIES } from '../config/currencies';
 import { BLOCK_EXPLORER_URL, PONG_CONTRACT_ID, STACKS_NETWORK } from '../config/env';
 import '../styles/LandingPage.css';
 
-const currencySymbols = Object.values(CURRENCIES).map(currency => currency.symbol);
+const currencySymbols = Object.values(CURRENCIES).map(c => c.symbol);
 
 const howItWorks = [
   {
-    title: 'Connect your Stacks wallet',
-    body: 'Use a Stacks wallet to enter the arcade and sign wallet messages that prove account ownership without moving funds.'
+    title: 'Connect Wallet',
+    body: 'Use Stacks Connect to link your wallet. Sign a message to prove ownership — no STX moved.',
+    icon: '🔌',
   },
   {
-    title: 'Create the STX stake',
-    body: 'Choose a room and stake STX into the Stacks escrow contract before your opponent joins.'
+    title: 'Stake STX',
+    body: 'Create a room and escrow STX into the Clarity contract. Share your 6-character code with a friend.',
+    icon: '💎',
   },
   {
-    title: 'Match the room terms',
-    body: 'The opponent joins with the same room code and matches the same STX stake amount.'
+    title: 'Play First-to-5',
+    body: '60 FPS server-authoritative Pong. Mouse, keyboard, or touch controls. Backend tracks every frame.',
+    icon: '🎮',
   },
   {
-    title: 'Play first to 5',
-    body: 'Win the Pong match, then claim the 2x STX pot after the backend signs the final result.'
-  }
+    title: 'Claim 2× Pot',
+    body: 'Winner claims the full 2× STX pot. Backend signs the result, contract verifies the SIP-005 proof.',
+    icon: '🏆',
+  },
 ];
 
 const modes = [
   {
     title: 'Staked Match',
-    body: 'Create a room, escrow STX, and invite an opponent to match your stake before play starts.'
+    body: 'Create a private room, escrow STX, and invite an opponent to match your stake before play starts.',
+    icon: '⚔',
   },
   {
     title: 'Public Challenge',
-    body: 'Publish a staked room on the challenge board so another player can accept it from the lobby.'
+    body: 'Publish a staked room on the challenge board. Anyone in the lobby can accept and match your stake.',
+    icon: '📢',
   },
   {
     title: 'Join Room',
-    body: 'Enter a 6-character room code to join a private match or complete an existing staked room.'
+    body: 'Enter a 6-character code to join a friend\u2019s private or staked match instantly.',
+    icon: '🔗',
   },
   {
     title: 'Watch Live',
-    body: 'Spectate active matches from the lobby when live games are available.'
+    body: 'Spectate active matches in real-time. See the paddles, score, and escrowed stakes live.',
+    icon: '👁',
   },
   {
-    title: 'Practice and Check-In',
-    body: 'Record practice, check-in, and daily reward actions as on-chain engagement events.'
-  }
+    title: 'Practice & Check-In',
+    body: 'Log practice sessions, daily check-ins, and claim rewards as on-chain engagement events.',
+    icon: '🎯',
+  },
 ];
 
 const safeguards = [
-  'STX stakes are held by the pong-escrow Clarity contract while a staked match is waiting, active, refundable, or claimable.',
-  'If player two never joins, player one can refund the unmatched stake after the 10-minute join timeout.',
-  'If an active staked match is abandoned, both players can be refunded with backend authorization.',
-  'Prize claims require the winning Stacks wallet and a backend-signed final result.'
+  {
+    title: 'Contract-Controlled Escrow',
+    body: 'STX held by the Clarity contract during waiting, active, refundable, and claimable states. Not even the backend can move funds.',
+    icon: '🛡',
+  },
+  {
+    title: 'Join Timeout Refund',
+    body: 'If player two never joins, player one can refund the unmatched stake after the 10-minute timeout.',
+    icon: '⏱',
+  },
+  {
+    title: 'Abandoned Match Recovery',
+    body: 'If a staked match is abandoned, both players can refund their stakes with backend authorization.',
+    icon: '🔄',
+  },
+  {
+    title: 'Signed Result Proofs',
+    body: 'Prize claims require the winning Stacks wallet and a backend-signed SIP-005 result proof verified on-chain.',
+    icon: '✍',
+  },
+];
+
+const contractCode = `;; pong-escrow.clar — StacksPong escrow
+
+(define-public (stake-as-player-1
+    (room-code (string-ascii 12)) (amount uint))
+  ;; Player 1 locks STX into escrow
+)
+
+(define-public (stake-as-player-2
+    (room-code (string-ascii 12)))
+  ;; Player 2 matches the stake
+)
+
+(define-public (claim-prize
+    (room-code) (winner) (score-1)
+    (score-2) (reason) (signature (buff 65)))
+  ;; Winner claims the full 2x pot
+)
+
+(define-public (claim-refund
+    (room-code (string-ascii 12)))
+  ;; Refund unmatched stake after 10-min
+)
+
+(define-public (claim-abandoned-match-refund
+    (room-code) (signature (buff 65)))
+  ;; Refund both players on abandonment
+)`;
+
+const stateMachine = [
+  { id: 'NOT_CREATED', label: 'Not Created', next: 'P1_STAKED' },
+  { id: 'P1_STAKED', label: 'Player 1 Staked', next: 'BOTH_STAKED' },
+  { id: 'BOTH_STAKED', label: 'Both Staked', next: 'COMPLETED' },
+  { id: 'COMPLETED', label: 'Completed', next: null },
+  { id: 'REFUNDED', label: 'Refunded', next: null },
+];
+
+const dashboardStats = [
+  { label: 'Total Games', value: 247, suffix: '' },
+  { label: 'Win Rate', value: 64, suffix: '%' },
+  { label: 'STX Won', value: 1840, suffix: '' },
+  { label: 'Claimable', value: 320, suffix: '' },
 ];
 
 const dashboardItems = [
-  'Game history with win, loss, casual, and staked filters.',
-  'Claimable wins with claimed transaction links.',
-  'Pending stakes with refund countdowns and active match recovery.',
-  'Leaderboard and ELO tracking for competitive play.'
+  { title: 'Game History', body: 'Filter by win, loss, casual, or staked matches with Load More pagination and payout details.' },
+  { title: 'Claimable Wins', body: 'View claimable prizes with claimed transaction links and block explorer URLs.' },
+  { title: 'Pending Stakes', body: 'Track refund countdowns and recover active staked matches from one panel.' },
+  { title: 'Leaderboard & ELO', body: 'Competitive ELO ranking with live leaderboard updates over WebSocket.' },
 ];
 
 const faqs = [
   {
     question: 'Which wallets are supported?',
-    answer: 'StacksPong uses Stacks Connect, so players use compatible Stacks wallets that can sign messages and submit contract calls.'
+    answer: 'StacksPong uses Stacks Connect, so any Stacks-compatible wallet that can sign messages and submit contract calls works.',
   },
   {
-    question: 'Which token can be staked?',
-    answer: 'This version supports STX staking only. Both players must stake the same STX amount for a staked match.'
+    question: 'Which token can I stake?',
+    answer: 'This version supports STX staking only. Both players must stake the same STX amount for a staked match.',
   },
   {
-    question: 'What happens if nobody joins?',
-    answer: 'The player-one stake remains in escrow until the 10-minute join timeout passes, then it can be refunded from Pending Stakes.'
+    question: 'What if nobody joins my match?',
+    answer: 'Your stake remains in escrow until the 10-minute join timeout passes, then you can refund from Pending Stakes.',
   },
   {
     question: 'What happens on disconnect?',
-    answer: 'Staked matches track reconnect windows. If reconnect windows expire and the backend marks the match abandoned, both players can recover their stakes.'
+    answer: 'Staked matches track reconnect windows. If they expire and the backend marks the match abandoned, both players recover their stakes.',
   },
   {
     question: 'How does claiming work?',
-    answer: 'The winner claims the 2x STX pot with the winning wallet after the backend signs the match result.'
+    answer: 'The winner claims the 2× STX pot using the winning wallet after the backend signs the match result proof. The contract verifies the signature on-chain.',
   },
   {
     question: 'Why is a wallet signature required?',
-    answer: 'Wallet signatures prove account ownership for username and session flows. They do not move STX by themselves.'
-  }
+    answer: 'Wallet signatures prove account ownership for username and session flows. They do not move STX by themselves.',
+  },
 ];
 
 const contractHref = PONG_CONTRACT_ID && BLOCK_EXPLORER_URL
   ? `${BLOCK_EXPLORER_URL}/address/${PONG_CONTRACT_ID}?chain=${STACKS_NETWORK}`
   : null;
 
-function LandingPage() {
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [challenges, setChallenges] = useState([]);
-  const [loadingLiveData, setLoadingLiveData] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadLiveData() {
-      setLoadingLiveData(true);
-      try {
-        const [leaderboardResponse, challengesResponse] = await Promise.allSettled([
-          fetch(`${BACKEND_URL}/api/rankings/top?limit=5`),
-          fetch(`${BACKEND_URL}/games/challenges`)
-        ]);
-
-        if (!isMounted) return;
-
-        if (leaderboardResponse.status === 'fulfilled' && leaderboardResponse.value.ok) {
-          const players = await leaderboardResponse.value.json();
-          setLeaderboard(Array.isArray(players) ? players : []);
-        }
-
-        if (challengesResponse.status === 'fulfilled' && challengesResponse.value.ok) {
-          const openChallenges = await challengesResponse.value.json();
-          setChallenges(Array.isArray(openChallenges) ? openChallenges : []);
-        }
-      } catch (error) {
-        console.error('Unable to load landing page live data:', error);
-      } finally {
-        if (isMounted) setLoadingLiveData(false);
-      }
-    }
-
-    loadLiveData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
+function ScrollReveal({ children, className = '', delay = 0 }) {
+  const [ref, visible] = useScrollReveal();
   return (
-    <main className="landing-page">
-      <section className="landing-hero" aria-labelledby="landing-title">
-        <nav className="landing-nav" aria-label="StacksPong website navigation">
-          <Link to="/" className="landing-brand">
-            <span className="landing-brand-mark">S</span>
-            <span>STACKS PONG</span>
-          </Link>
-          <div className="landing-nav-links">
-            <a href="#how-it-works">How it works</a>
-            <Link to={LOBBY_ROUTE} className="landing-nav-cta">Play</Link>
-          </div>
-        </nav>
+    <div
+      ref={ref}
+      className={`lp-reveal ${visible ? 'lp-reveal--in' : ''} ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
 
-        <div className="landing-hero-grid">
-          <div className="landing-hero-copy">
-            <p className="landing-kicker">Built for Stacks wallets</p>
-            <h1 id="landing-title">Stake STX. Play Pong. Win 2x back.</h1>
-            <p>
-              StacksPong is a real-time Pong arcade where players can escrow matching STX stakes,
-              play first-to-5 matches, and claim prizes from verified results.
-            </p>
-            <div className="landing-actions">
-              <Link to={LOBBY_ROUTE} className="landing-button landing-button-primary">Play Now</Link>
-              <a href="#how-it-works" className="landing-button landing-button-secondary">See How It Works</a>
-            </div>
-            <div className="landing-token-strip" aria-label="Supported staking tokens">
-              {currencySymbols.map(symbol => <span key={symbol}>{symbol}</span>)}
-            </div>
-            <div className="landing-network-strip" aria-label="Stacks network and contract">
-              <span>Network: {STACKS_NETWORK}</span>
-              <span>Contract: {PONG_CONTRACT_ID || 'Configured by environment'}</span>
-            </div>
-          </div>
-
-          <div className="landing-court" aria-label="StacksPong staked match preview">
-            <div className="landing-score">
-              <span>YOU 04</span>
-              <span>RIVAL 03</span>
-            </div>
-            <span className="landing-paddle landing-paddle-left"></span>
-            <span className="landing-paddle landing-paddle-right"></span>
-            <span className="landing-ball"></span>
-            <div className="landing-ticket">
-              <span>Escrowed pot</span>
-              <strong>2.0 STX</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-section landing-live" aria-labelledby="live-title">
-        <div className="landing-section-heading">
-          <p className="landing-kicker">Live highlights</p>
-          <h2 id="live-title">See the lobby pulse before you enter.</h2>
-        </div>
-        <div className="landing-live-grid">
-          <div className="landing-panel">
-            <div className="landing-panel-title">
-              <h3>Top players</h3>
-              <span>{leaderboard.length ? `${leaderboard.length} loaded` : 'Leaderboard'}</span>
-            </div>
-            <div className="landing-list">
-              {leaderboard.length > 0 ? leaderboard.map((player, index) => (
-                <div className="landing-row" key={player.name || index}>
-                  <span>{index + 1}</span>
-                  <strong>{player.name || 'Unknown'}</strong>
-                  <em>{player.rating || 1000}</em>
-                </div>
-              )) : (
-                <p className="landing-empty">{loadingLiveData ? 'Loading top players...' : 'No ranked players yet.'}</p>
-              )}
-            </div>
-          </div>
-          <div className="landing-panel">
-            <div className="landing-panel-title">
-              <h3>Open challenges</h3>
-              <span>{challenges.length ? `${challenges.length} waiting` : 'Challenge board'}</span>
-            </div>
-            <div className="landing-list">
-              {challenges.length > 0 ? challenges.slice(0, 5).map(challenge => (
-                <div className="landing-row" key={challenge.roomCode}>
-                  <span>{challenge.roomCode}</span>
-                  <strong>{challenge.stakeAmount || 'Open'} STX</strong>
-                  <em>Waiting</em>
-                </div>
-              )) : (
-                <p className="landing-empty">{loadingLiveData ? 'Checking challenge board...' : 'No public challenges right now.'}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-section" id="how-it-works" aria-labelledby="how-title">
-        <div className="landing-section-heading">
-          <p className="landing-kicker">How it works</p>
-          <h2 id="how-title">From wallet signature to winner claim.</h2>
-        </div>
-        <div className="landing-step-grid">
-          {howItWorks.map((item, index) => (
-            <article className="landing-step" key={item.title}>
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-section landing-band" aria-labelledby="modes-title">
-        <div className="landing-section-heading">
-          <p className="landing-kicker">Game modes</p>
-          <h2 id="modes-title">Play, challenge, spectate, and keep your streak alive.</h2>
-        </div>
-        <div className="landing-mode-grid">
-          {modes.map(mode => (
-            <article className="landing-mode" key={mode.title}>
-              <h3>{mode.title}</h3>
-              <p>{mode.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-section landing-two-column" id="escrow" aria-labelledby="escrow-title">
-        <div>
-          <p className="landing-kicker">Escrow and safety</p>
-          <h2 id="escrow-title">STX stays in contract-controlled escrow.</h2>
-          <p className="landing-section-copy">
-            StacksPong uses the pong-escrow Clarity contract for staked matches. The app records room
-            state in the backend, but STX movement happens through Stacks wallet transactions.
-          </p>
-          <div className="landing-contract-panel">
-            <span>{STACKS_NETWORK}</span>
-            {contractHref ? (
-              <a href={contractHref} target="_blank" rel="noopener noreferrer">{PONG_CONTRACT_ID}</a>
-            ) : (
-              <strong>{PONG_CONTRACT_ID || 'Contract configured by environment'}</strong>
-            )}
-          </div>
-        </div>
-        <div className="landing-check-list">
-          {safeguards.map(item => <p key={item}>{item}</p>)}
-        </div>
-      </section>
-
-      <section className="landing-section" aria-labelledby="dashboard-title">
-        <div className="landing-section-heading">
-          <p className="landing-kicker">Player dashboard</p>
-          <h2 id="dashboard-title">Everything a staked player needs after the match.</h2>
-        </div>
-        <div className="landing-dashboard-grid">
-          {dashboardItems.map(item => (
-            <article className="landing-dashboard-item" key={item}>
-              <p>{item}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-section landing-band" id="faq" aria-labelledby="faq-title">
-        <div className="landing-section-heading">
-          <p className="landing-kicker">FAQ</p>
-          <h2 id="faq-title">Straight answers before you stake.</h2>
-        </div>
-        <div className="landing-faq-grid">
-          {faqs.map(item => (
-            <article className="landing-faq" key={item.question}>
-              <h3>{item.question}</h3>
-              <p>{item.answer}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-final" aria-labelledby="final-title">
-        <p className="landing-kicker">Ready</p>
-        <h2 id="final-title">Enter the StacksPong lobby.</h2>
-        <p>Create a staked match, join a room, spectate live games, or check the leaderboard.</p>
-        <Link to={LOBBY_ROUTE} className="landing-button landing-button-primary">Play Now</Link>
-      </section>
+function LandingPage() {
+  return (
+    <main className="lp">
+      <div className="lp__scanlines" />
+      <div className="lp__vignette" />
     </main>
   );
 }
