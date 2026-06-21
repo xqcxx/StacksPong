@@ -516,6 +516,116 @@ function LandingPage() {
           ))}
         </div>
       </section>
+
+      <section className="lp-section" id="how" aria-labelledby="lp-how-title">
+        <div className="lp-section__inner">
+          <ScrollReveal>
+            <p className="lp-kicker">▌ HOW IT WORKS</p>
+            <h2 id="lp-how-title" className="lp-section__title">From wallet signature to winner claim.</h2>
+          </ScrollReveal>
+          <div className="lp-how__grid">
+            <div className="lp-how__circuit" />
+            {howItWorks.map((step, i) => (
+              <ScrollReveal key={step.title} delay={i * 150}>
+                <article className="lp-how__step">
+                  <div className="lp-how__node" />
+                  <span className="lp-how__num">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="lp-how__icon">{step.icon}</span>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </article>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-section lp-section--band" id="modes" aria-labelledby="lp-modes-title">
+        <div className="lp-section__inner">
+          <ScrollReveal>
+            <p className="lp-kicker">▌ GAME MODES</p>
+            <h2 id="lp-modes-title" className="lp-section__title">Choose your arcade cabinet.</h2>
+          </ScrollReveal>
+          <div className="lp-modes__grid">
+            {modes.map((mode, i) => (
+              <ScrollReveal key={mode.title} delay={i * 100}>
+                <article className="lp-cabinet">
+                  <div className="lp-cabinet__marquee">
+                    <span>{mode.icon}</span>
+                    <span>{mode.title}</span>
+                  </div>
+                  <div className="lp-cabinet__screen">
+                    <p>{mode.body}</p>
+                  </div>
+                  <div className="lp-cabinet__panel">
+                    <span className="lp-cabinet__cursor">►</span>
+                    <span className="lp-cabinet__select">SELECT</span>
+                  </div>
+                </article>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-section" id="escrow" aria-labelledby="lp-escrow-title">
+        <div className="lp-section__inner">
+          <div className="lp-escrow__grid">
+            <div>
+              <ScrollReveal>
+                <p className="lp-kicker">▌ THE ESCROW CONTRACT</p>
+                <h2 id="lp-escrow-title" className="lp-section__title">Clarity 4. STX locked on Stacks.</h2>
+                <p className="lp-section__copy">
+                  StacksPong uses the <strong>pong-escrow</strong> Clarity contract for staked matches.
+                  The backend records room state, but STX movement happens exclusively through Stacks
+                  wallet transactions verified on-chain.
+                </p>
+              </ScrollReveal>
+              <ScrollReveal delay={200}>
+                <div className="lp-escrow__contract-info">
+                  <span>NETWORK</span>
+                  <strong>{STACKS_NETWORK.toUpperCase()}</strong>
+                  {contractHref ? (
+                    <a href={contractHref} target="_blank" rel="noopener noreferrer">
+                      {PONG_CONTRACT_ID} ↗
+                    </a>
+                  ) : (
+                    <strong>{PONG_CONTRACT_ID || 'Configured by environment'}</strong>
+                  )}
+                </div>
+              </ScrollReveal>
+            </div>
+            <ScrollReveal delay={150}>
+              <TerminalCode />
+            </ScrollReveal>
+          </div>
+
+          <ScrollReveal delay={200}>
+            <div className="lp-states">
+              <h3 className="lp-states__title">MATCH LIFECYCLE</h3>
+              <div className="lp-states__flow">
+                {stateMachine.slice(0, 4).map((s, i) => (
+                  <React.Fragment key={s.id}>
+                    <div className={`lp-states__node lp-states__node--${s.id.toLowerCase()}`}>
+                      <span className="lp-states__dot" />
+                      <span>{s.label}</span>
+                    </div>
+                    {i < 3 && <span className="lp-states__arrow">→</span>}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="lp-states__branch">
+                <span className="lp-states__arrow lp-states__arrow--down">↓</span>
+                <div className="lp-states__node lp-states__node--refunded">
+                  <span className="lp-states__dot" />
+                  <span>Refunded</span>
+                </div>
+                <p className="lp-states__note">Timeout · Abandonment · Expired claim</p>
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
     </main>
   );
 }
