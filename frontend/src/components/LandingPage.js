@@ -176,6 +176,21 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
   );
 }
 
+function FaqItem({ item, isOpen, onToggle, index }) {
+  return (
+    <div className={`lp-faq__item ${isOpen ? 'lp-faq__item--open' : ''}`}>
+      <button className="lp-faq__q" onClick={onToggle} aria-expanded={isOpen}>
+        <span className="lp-faq__num">{String(index + 1).padStart(2, '0')}</span>
+        <span className="lp-faq__text">{item.question}</span>
+        <span className="lp-faq__arrow">{isOpen ? '▼' : '►'}</span>
+      </button>
+      <div className="lp-faq__a">
+        <p>{item.answer}</p>
+      </div>
+    </div>
+  );
+}
+
 function TerminalCode() {
   const [ref, visible] = useScrollReveal();
   const [typed, setTyped] = useState('');
