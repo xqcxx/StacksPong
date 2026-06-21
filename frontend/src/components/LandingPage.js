@@ -225,7 +225,6 @@ function Counter({ target, suffix = '', duration = 1600 }) {
 
   useEffect(() => {
     if (!visible) return;
-    let start = 0;
     const startTime = performance.now();
     const animate = (now) => {
       const p = Math.min((now - startTime) / duration, 1);
@@ -379,6 +378,7 @@ function CRTBoot({ onComplete }) {
       }
     }, 25);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
