@@ -626,6 +626,151 @@ function LandingPage() {
           </ScrollReveal>
         </div>
       </section>
+
+      <section className="lp-section lp-section--band" aria-labelledby="lp-safety-title">
+        <div className="lp-section__inner">
+          <ScrollReveal>
+            <p className="lp-kicker">▌ SAFETY & REFUNDS</p>
+            <h2 id="lp-safety-title" className="lp-section__title">Your STX is protected at every stage.</h2>
+          </ScrollReveal>
+          <div className="lp-safety__grid">
+            {safeguards.map((item, i) => (
+              <ScrollReveal key={item.title} delay={i * 120}>
+                <article className="lp-shield">
+                  <div className="lp-shield__scan" />
+                  <span className="lp-shield__icon">{item.icon}</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </article>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-section" aria-labelledby="lp-dash-title">
+        <div className="lp-section__inner">
+          <ScrollReveal>
+            <p className="lp-kicker">▌ PLAYER DASHBOARD</p>
+            <h2 id="lp-dash-title" className="lp-section__title">Everything a staked player needs.</h2>
+          </ScrollReveal>
+
+          <div className="lp-dash__stats">
+            {dashboardStats.map((stat, i) => (
+              <ScrollReveal key={stat.label} delay={i * 100}>
+                <div className="lp-dash__stat">
+                  <span className="lp-dash__stat-value">
+                    <Counter target={stat.value} suffix={stat.suffix} />
+                  </span>
+                  <span className="lp-dash__stat-label">{stat.label}</span>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+
+          <div className="lp-dash__grid">
+            <ScrollReveal>
+              <div className="lp-dash__panel">
+                <h3>▶ TOP PLAYERS</h3>
+                <div className="lp-dash__list">
+                  {leaderboard.length > 0 ? leaderboard.map((p, i) => (
+                    <div className="lp-dash__row" key={p.name || i}>
+                      <span className="lp-dash__rank">{i + 1}</span>
+                      <strong>{p.name || 'Unknown'}</strong>
+                      <em>{p.rating || 1000}</em>
+                    </div>
+                  )) : (
+                    <p className="lp-dash__empty">
+                      {loadingLive ? 'Loading leaderboard...' : 'No ranked players yet.'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal delay={100}>
+              <div className="lp-dash__panel">
+                <h3>◆ OPEN CHALLENGES</h3>
+                <div className="lp-dash__list">
+                  {challenges.length > 0 ? challenges.slice(0, 5).map(c => (
+                    <div className="lp-dash__row" key={c.roomCode}>
+                      <span className="lp-dash__code">{c.roomCode}</span>
+                      <strong>{c.stakeAmount || '—'} STX</strong>
+                      <em>WAITING</em>
+                    </div>
+                  )) : (
+                    <p className="lp-dash__empty">
+                      {loadingLive ? 'Checking challenge board...' : 'No public challenges right now.'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+
+          <div className="lp-dash__features">
+            {dashboardItems.map((item, i) => (
+              <ScrollReveal key={item.title} delay={i * 100}>
+                <article className="lp-dash__feature">
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </article>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-section lp-section--band" id="faq" aria-labelledby="lp-faq-title">
+        <div className="lp-section__inner">
+          <ScrollReveal>
+            <p className="lp-kicker">▌ FAQ</p>
+            <h2 id="lp-faq-title" className="lp-section__title">Straight answers before you stake.</h2>
+          </ScrollReveal>
+          <ScrollReveal delay={100}>
+            <div className="lp-faq__list">
+              {faqs.map((item, i) => (
+                <FaqItem
+                  key={i}
+                  item={item}
+                  index={i}
+                  isOpen={openFaq === i}
+                  onToggle={() => setOpenFaq(openFaq === i ? -1 : i)}
+                />
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      <section className="lp-coin" aria-labelledby="lp-coin-title">
+        <div className="lp-coin__floor" />
+        <div className="lp-coin__content">
+          <h2 id="lp-coin-title" className="lp-coin__text">INSERT COIN</h2>
+          <p className="lp-coin__sub">Stake STX. Play Pong. Win 2× back.</p>
+          <Link to={LOBBY_ROUTE} className="lp-coin__btn">
+            <span className="lp-coin__btn-blink">▶</span> PRESS START
+          </Link>
+        </div>
+      </section>
+
+      <footer className="lp-foot">
+        <div className="lp-foot__inner">
+          <div className="lp-foot__brand">
+            <span className="lp-nav__mark">S</span>
+            <span>STACKS PONG</span>
+          </div>
+          <div className="lp-foot__links">
+            <Link to={LOBBY_ROUTE}>Play</Link>
+            <a href="#how">How It Works</a>
+            <a href="#escrow">Contract</a>
+            <a href="#faq">FAQ</a>
+          </div>
+          <div className="lp-foot__info">
+            <span>NETWORK: {STACKS_NETWORK.toUpperCase()}</span>
+            <span>BUILT ON STACKS</span>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
