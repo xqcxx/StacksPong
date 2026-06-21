@@ -176,6 +176,53 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
   );
 }
 
+function TerminalCode() {
+  const [ref, visible] = useScrollReveal();
+  const [typed, setTyped] = useState('');
+
+  useEffect(() => {
+    if (!visible) return;
+    let i = 0;
+    const interval = setInterval(() => {
+      i += 4;
+      setTyped(contractCode.slice(0, i));
+      if (i >= contractCode.length) clearInterval(interval);
+    }, 12);
+    return () => clearInterval(interval);
+  }, [visible]);
+
+  return (
+    <div ref={ref} className="lp-terminal">
+      <div className="lp-terminal__bar">
+        <span className="lp-terminal__dot lp-terminal__dot--r" />
+        <span className="lp-terminal__dot lp-terminal__dot--y" />
+        <span className="lp-terminal__dot lp-terminal__dot--g" />
+        <span className="lp-terminal__file">pong-escrow.clar</span>
+      </div>
+      <pre className="lp-terminal__code"><span className="lp-terminal__typed">{typed}</span><span className="lp-terminal__cursor">█</span></pre>
+    </div>
+  );
+}
+
+function Counter({ target, suffix = '', duration = 1600 }) {
+  const [ref, visible] = useScrollReveal();
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (!visible) return;
+    let start = 0;
+    const startTime = performance.now();
+    const animate = (now) => {
+      const p = Math.min((now - startTime) / duration, 1);
+      setValue(Math.floor(p * target));
+      if (p < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [visible, target, duration]);
+
+  return <span ref={ref}>{value.toLocaleString()}{suffix}</span>;
+}
+
 function PongCourt() {
   const canvasRef = useRef(null);
 
