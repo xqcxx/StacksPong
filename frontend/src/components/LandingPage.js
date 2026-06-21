@@ -392,12 +392,130 @@ function CRTBoot({ onComplete }) {
 
 function LandingPage() {
   const [bootDone, setBootDone] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [challenges, setChallenges] = useState([]);
+  const [loadingLive, setLoadingLive] = useState(true);
+  const [openFaq, setOpenFaq] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadLiveData() {
+      setLoadingLive(true);
+      try {
+        const [lbRes, chRes] = await Promise.allSettled([
+          fetch(`${BACKEND_URL}/api/rankings/top?limit=5`),
+          fetch(`${BACKEND_URL}/games/challenges`),
+        ]);
+
+        if (!isMounted) return;
+
+        if (lbRes.status === 'fulfilled' && lbRes.value.ok) {
+          const players = await lbRes.value.json();
+          setLeaderboard(Array.isArray(players) ? players : []);
+        }
+
+        if (chRes.status === 'fulfilled' && chRes.value.ok) {
+          const open = await chRes.value.json();
+          setChallenges(Array.isArray(open) ? open : []);
+        }
+      } catch (err) {
+        console.error('Unable to load landing page live data:', err);
+      } finally {
+        if (isMounted) setLoadingLive(false);
+      }
+    }
+
+    loadLiveData();
+    return () => { isMounted = false; };
+  }, []);
+
+  const tickerItems = [
+    '▲ 1,247 MATCHES PLAYED',
+    '◆ 8,920 STX TOTAL STAKED',
+    leaderboard[0] ? `● RANK #1: ${leaderboard[0].name || 'UNKNOWN'}` : '● AWAITING FIRST CHAMPION',
+    '★ LIVE GAMES RUNNING',
+    '► BUILT ON STACKS',
+    '◄ CLARITY 4 ESCROW',
+    '► 60 FPS REAL-TIME',
+    '◄ PULL-BASED PAYOUTS',
+    '▲ FIRST TO 5 WINS',
+    '◆ 2× WINNER PAYOUT',
+  ];
+  const tickerDup = [...tickerItems, ...tickerItems];
 
   return (
     <main className="lp">
       {!bootDone && <CRTBoot onComplete={() => setBootDone(true)} />}
+
       <div className="lp__scanlines" />
       <div className="lp__vignette" />
+      <div className="lp__flicker" />
+
+      <nav className="lp-nav" aria-label="StacksPong navigation">
+        <Link to="/" className="lp-nav__brand">
+          <span className="lp-nav__mark">S</span>
+          <span>STACKS PONG</span>
+        </Link>
+        <div className="lp-nav__links">
+          <a href="#how">How It Works</a>
+          <a href="#modes">Modes</a>
+          <a href="#escrow">Contract</a>
+          <a href="#faq">FAQ</a>
+          <Link to={LOBBY_ROUTE} className="lp-nav__cta">► PLAY</Link>
+        </div>
+      </nav>
+
+      <section className="lp-hero" aria-labelledby="lp-hero-title">
+        <div className="lp-hero__floor" />
+        <div className="lp-hero__grid">
+          <div className="lp-hero__copy">
+            <p className="lp-kicker">▌ STACKS-NATIVE ARCADE STAKING</p>
+            <h1 id="lp-hero-title" className="lp-hero__title" data-text="STAKE. PLAY. WIN.">
+              STAKE. PLAY. WIN.
+            </h1>
+            <p className="lp-hero__desc">
+              StacksPong is a real-time Pong arcade where players escrow matching STX stakes
+              through a Clarity smart contract, play first-to-5 duels at 60 FPS, and claim
+              verified 2× payouts on-chain.
+            </p>
+            <div className="lp-hero__actions">
+              <Link to={LOBBY_ROUTE} className="lp-btn lp-btn--primary">
+                <span className="lp-btn__icon">▶</span> PRESS START
+              </Link>
+              <a href="#how" className="lp-btn lp-btn--ghost">How It Works</a>
+            </div>
+            <div className="lp-hero__tokens">
+              {currencySymbols.map(s => <span key={s}>{s}</span>)}
+            </div>
+            <div className="lp-hero__meta">
+              <span>NETWORK: {STACKS_NETWORK.toUpperCase()}</span>
+              <span>CONTRACT: {PONG_CONTRACT_ID || 'env-configured'}</span>
+            </div>
+          </div>
+
+          <div className="lp-hero__court">
+            <div className="lp-hero__court-bezel">
+              <PongCourt />
+              <div className="lp-hero__court-overlay">
+                <div className="lp-hero__court-label">LIVE PREVIEW</div>
+                <div className="lp-hero__pot">
+                  <span>ESCROWED POT</span>
+                  <strong>2.0 STX</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-ticker" aria-label="Live stats ticker">
+        <div className="lp-ticker__track">
+          {tickerDup.map((item, i) => (
+            <span key={i} className="lp-ticker__item">{item}</span>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }
