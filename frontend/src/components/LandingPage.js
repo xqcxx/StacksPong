@@ -176,9 +176,49 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
   );
 }
 
+function CRTBoot({ onComplete }) {
+  const [text, setText] = useState('');
+  const [fading, setFading] = useState(false);
+  const lines = [
+    'PONG-IT://ESCROW_TERMINAL v1.0',
+    '> INITIALIZING ARCADE SYSTEM...',
+    '> LOADING CLARITY CONTRACT...',
+    '> CONNECTING SOCKET.IO @ 60FPS...',
+    '> VERIFYING STX ESCROW...',
+    '> SIP-005 RESULT PROOFS: READY',
+    '> READY. PRESS START.',
+  ];
+  const fullText = lines.join('\n');
+
+  useEffect(() => {
+    let i = 0;
+    const interval = setInterval(() => {
+      i += 3;
+      setText(fullText.slice(0, i));
+      if (i >= fullText.length) {
+        clearInterval(interval);
+        setTimeout(() => setFading(true), 500);
+        setTimeout(onComplete, 1200);
+      }
+    }, 25);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className={`lp-crt ${fading ? 'lp-crt--out' : ''}`}>
+      <div className="lp-crt__line" />
+      <div className="lp-crt__scanlines" />
+      <pre className="lp-crt__text">{text}<span className="lp-crt__cursor">█</span></pre>
+    </div>
+  );
+}
+
 function LandingPage() {
+  const [bootDone, setBootDone] = useState(false);
+
   return (
     <main className="lp">
+      {!bootDone && <CRTBoot onComplete={() => setBootDone(true)} />}
       <div className="lp__scanlines" />
       <div className="lp__vignette" />
     </main>
