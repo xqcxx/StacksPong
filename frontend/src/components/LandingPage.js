@@ -176,6 +176,121 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
   );
 }
 
+function PongCourt() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let dpr = window.devicePixelRatio || 1;
+    let W, H;
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      W = rect.width;
+      H = rect.height;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    let ball = { x: 0.5, y: 0.5, vx: 0.007, vy: 0.004 };
+    let pL = { y: 0.5, score: 3 };
+    let pR = { y: 0.5, score: 4 };
+    let trail = [];
+    let animId;
+
+    const loop = () => {
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      if (ball.y < 0.04 || ball.y > 0.96) ball.vy *= -1;
+
+      pL.y += (ball.y - pL.y) * 0.07;
+      pR.y += (ball.y - pR.y) * 0.07;
+      pL.y = Math.max(0.1, Math.min(0.9, pL.y));
+      pR.y = Math.max(0.1, Math.min(0.9, pR.y));
+
+      if (ball.x < 0.05 && Math.abs(ball.y - pL.y) < 0.12) {
+        ball.vx = Math.abs(ball.vx) * 1.03;
+        ball.vy += (ball.y - pL.y) * 0.15;
+      }
+      if (ball.x > 0.95 && Math.abs(ball.y - pR.y) < 0.12) {
+        ball.vx = -Math.abs(ball.vx) * 1.03;
+        ball.vy += (ball.y - pR.y) * 0.15;
+      }
+
+      if (ball.x < -0.02) {
+        pR.score++;
+        ball = { x: 0.5, y: 0.5, vx: 0.007, vy: 0.004 };
+        trail = [];
+      }
+      if (ball.x > 1.02) {
+        pL.score++;
+        ball = { x: 0.5, y: 0.5, vx: -0.007, vy: 0.004 };
+        trail = [];
+      }
+
+      if (pL.score >= 5) pL.score = 0;
+      if (pR.score >= 5) pR.score = 0;
+
+      trail.push({ x: ball.x, y: ball.y });
+      if (trail.length > 18) trail.shift();
+
+      ctx.clearRect(0, 0, W, H);
+
+      ctx.strokeStyle = 'rgba(53, 208, 127, 0.15)';
+      ctx.setLineDash([4, 8]);
+      ctx.beginPath();
+      ctx.moveTo(W / 2, 0);
+      ctx.lineTo(W / 2, H);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = '20px "Press Start 2P", monospace';
+      ctx.fillStyle = 'rgba(53, 208, 127, 0.5)';
+      ctx.textAlign = 'center';
+      ctx.fillText(String(pL.score), W / 2 - 50, 36);
+      ctx.fillText(String(pR.score), W / 2 + 50, 36);
+
+      trail.forEach((t, i) => {
+        const a = i / trail.length;
+        ctx.fillStyle = `rgba(253, 208, 64, ${a * 0.35})`;
+        ctx.beginPath();
+        ctx.arc(t.x * W, t.y * H, 5 * a, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.fillStyle = '#35d07f';
+      ctx.shadowColor = '#35d07f';
+      ctx.shadowBlur = 18;
+      ctx.fillRect(16, pL.y * H - 36, 8, 72);
+      ctx.fillRect(W - 24, pR.y * H - 36, 8, 72);
+
+      ctx.fillStyle = '#fdd040';
+      ctx.shadowColor = '#fdd040';
+      ctx.shadowBlur = 24;
+      ctx.beginPath();
+      ctx.arc(ball.x * W, ball.y * H, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      animId = requestAnimationFrame(loop);
+    };
+    loop();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="lp-hero__canvas" aria-label="Live animated Pong preview" />;
+}
+
 function CRTBoot({ onComplete }) {
   const [text, setText] = useState('');
   const [fading, setFading] = useState(false);
