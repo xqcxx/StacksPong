@@ -14,7 +14,7 @@ import {
   isConnected,
   request
 } from '@stacks/connect';
-import { STACKS_CHAIN_ID, STACKS_NETWORK } from '../config/env';
+import { STACKS_CHAIN_ID, STACKS_NETWORK, WALLET_CONNECT_PROJECT_ID } from '../config/env';
 import { selectStxAddress } from '../utils/stacksWallet';
 
 const StacksWalletContext = createContext(null);
@@ -29,24 +29,44 @@ export function Web3Provider({ children }) {
     }
   }, []);
 
+  const requestOptions = useMemo(() => {
+    const opts = { forceWalletSelect: true, network: STACKS_NETWORK };
+    if (WALLET_CONNECT_PROJECT_ID) {
+      opts.walletConnect = { projectId: WALLET_CONNECT_PROJECT_ID };
+    }
+    return opts;
+  }, []);
+
   const open = useCallback(async () => {
-    const response = await connect({ network: STACKS_NETWORK });
-    console.debug('[Web3Provider] connect response:', response);
-    let next = selectStxAddress(response);
+    let lastErr;
+    let next = null;
+
+    try {
+      const connectResponse = await connect(requestOptions);
+      console.debug('[Web3Provider] connect response:', connectResponse);
+      next = selectStxAddress(connectResponse);
+    } catch (err) {
+      console.debug('[Web3Provider] connect() failed, trying stx_getAccounts:', err);
+      lastErr = err;
+    }
+
     if (!next) {
-      console.debug('[Web3Provider] connect() returned no STX address, trying stx_getAccounts as Xverse fallback');
       try {
-        const accountsResponse = await request('stx_getAccounts', { network: STACKS_NETWORK });
-        console.debug('[Web3Provider] stx_getAccounts response:', accountsResponse);
+        const accountsResponse = await request('stx_getAccounts');
+        console.debug('[Web3Provider] stx_getAccounts fallback response:', accountsResponse);
         next = selectStxAddress(accountsResponse);
-      } catch (fallbackErr) {
-        console.debug('[Web3Provider] stx_getAccounts fallback failed:', fallbackErr);
+      } catch (err) {
+        console.debug('[Web3Provider] stx_getAccounts fallback failed:', err);
+        if (!lastErr) lastErr = err;
       }
     }
-    if (!next) throw new Error('The wallet did not return a Stacks address');
+
+    if (!next) {
+      throw lastErr || new Error('The wallet did not return a Stacks address');
+    }
     setAccount(next);
     return next;
-  }, []);
+  }, [requestOptions]);
 
   const close = useCallback(() => {
     disconnect();

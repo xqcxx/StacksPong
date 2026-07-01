@@ -18,5 +18,7 @@ export const IS_MAINNET = ENV === 'mainnet';
 export const txExplorerUrl = txid =>
   `${BLOCK_EXPLORER_URL}/txid/${txid}?chain=${IS_MAINNET ? 'mainnet' : 'testnet'}`;
 
+export const WALLET_CONNECT_PROJECT_ID = envVar('WALLET_CONNECT_PROJECT_ID') || undefined;
+
 // Transitional alias used by history/proof presentation components.
 export const PONG_ESCROW_ADDRESS = PONG_CONTRACT_ADDRESS;
