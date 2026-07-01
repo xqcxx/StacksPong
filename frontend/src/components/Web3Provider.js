@@ -4,90 +4,107 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react';
 import {
-  connect,
-  disconnect,
-  getLocalStorage,
-  clearLocalStorage,
-  isConnected,
-  request
+  AppConfig,
+  UserSession,
+  authenticate,
+  openStructuredDataSignatureRequestPopup
 } from '@stacks/connect';
-import { STACKS_CHAIN_ID, STACKS_NETWORK, WALLET_CONNECT_PROJECT_ID } from '../config/env';
-import { selectStxAddress } from '../utils/stacksWallet';
+import { STACKS_CHAIN_ID, STACKS_NETWORK } from '../config/env';
+import { getStxAddressFromSession } from '../utils/stacksWallet';
 
 const StacksWalletContext = createContext(null);
 
 export function Web3Provider({ children }) {
-  const [account, setAccount] = useState(null);
+  const [stxAddress, setStxAddress] = useState(null);
+  const userSessionRef = useRef(null);
+  const [sessionReady, setSessionReady] = useState(false);
 
   useEffect(() => {
-    if (isConnected()) {
-      const cached = selectStxAddress(getLocalStorage());
-      if (cached) setAccount(cached);
-    }
-  }, []);
+    const appConfig = new AppConfig(['store_write', 'publish_data']);
+    const session = new UserSession({ appConfig });
+    userSessionRef.current = session;
 
-  const requestOptions = useMemo(() => {
-    const opts = { forceWalletSelect: true, network: STACKS_NETWORK };
-    if (WALLET_CONNECT_PROJECT_ID) {
-      opts.walletConnect = { projectId: WALLET_CONNECT_PROJECT_ID };
+    const sessionAccount = getStxAddressFromSession(session);
+    if (sessionAccount) {
+      setStxAddress(sessionAccount.address);
     }
-    return opts;
+    setSessionReady(true);
   }, []);
 
   const open = useCallback(async () => {
-    let lastErr;
-    let next = null;
+    const session = userSessionRef.current;
+    if (!session) throw new Error('Session not initialized');
 
-    try {
-      const connectResponse = await connect(requestOptions);
-      console.debug('[Web3Provider] connect response:', connectResponse);
-      next = selectStxAddress(connectResponse);
-    } catch (err) {
-      console.debug('[Web3Provider] connect() failed, trying stx_getAccounts:', err);
-      lastErr = err;
-    }
-
-    if (!next) {
+    return new Promise((resolve, reject) => {
       try {
-        const accountsResponse = await request('stx_getAccounts');
-        console.debug('[Web3Provider] stx_getAccounts fallback response:', accountsResponse);
-        next = selectStxAddress(accountsResponse);
-      } catch (err) {
-        console.debug('[Web3Provider] stx_getAccounts fallback failed:', err);
-        if (!lastErr) lastErr = err;
+        authenticate({
+          appDetails: {
+            name: 'StacksPong',
+            icon: window.location.origin + '/logo192.png'
+          },
+          userSession: session,
+          onFinish: () => {
+            const userData = session.loadUserData();
+            const addr = userData.profile?.stxAddress?.mainnet
+              || userData.profile?.stxAddress?.testnet;
+            if (!addr) {
+              reject(new Error('The wallet did not return a Stacks address'));
+              return;
+            }
+            setStxAddress(addr);
+            resolve(addr);
+          },
+          onCancel: (error) => {
+            reject(error || new Error('Wallet connection cancelled'));
+          }
+        });
+      } catch (error) {
+        reject(error);
       }
-    }
-
-    if (!next) {
-      throw lastErr || new Error('The wallet did not return a Stacks address');
-    }
-    setAccount(next);
-    return next;
-  }, [requestOptions]);
+    });
+  }, []);
 
   const close = useCallback(() => {
-    disconnect();
-    clearLocalStorage();
-    setAccount(null);
+    const session = userSessionRef.current;
+    if (session) {
+      session.signUserOut();
+    }
+    setStxAddress(null);
   }, []);
 
   const signStructuredMessage = useCallback(async ({ message, domain }) => {
-    return request('stx_signStructuredMessage', { message, domain });
+    const session = userSessionRef.current;
+    if (!session) throw new Error('Session not initialized');
+
+    return new Promise((resolve, reject) => {
+      openStructuredDataSignatureRequestPopup({
+        message,
+        domain,
+        userSession: session,
+        network: STACKS_NETWORK,
+        onFinish: (data) => resolve(data),
+        onCancel: (error) => reject(error || new Error('Signature cancelled'))
+      });
+    });
   }, []);
 
   const value = useMemo(() => ({
-    address: account?.address || null,
-    publicKey: account?.publicKey || null,
-    isConnected: Boolean(account?.address) && isConnected(),
+    address: stxAddress,
+    publicKey: null,
+    isConnected: Boolean(stxAddress),
     chainId: STACKS_CHAIN_ID,
     chain: { id: STACKS_CHAIN_ID, name: STACKS_NETWORK },
+    userSession: userSessionRef.current,
     open,
     disconnect: close,
     signStructuredMessage
-  }), [account, close, open, signStructuredMessage]);
+  }), [stxAddress, close, open, signStructuredMessage]);
+
+  if (!sessionReady) return null;
 
   return (
     <StacksWalletContext.Provider value={value}>

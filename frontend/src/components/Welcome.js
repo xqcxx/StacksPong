@@ -38,7 +38,7 @@ const Welcome = ({ setGameState, savedUsername, onUsernameSet }) => {
   const { notify } = useNotification();
 
   // Web3 hooks
-  const { address, isConnected, open, disconnect: disconnectWallet } = useAccount();
+  const { address, isConnected, open, disconnect } = useAccount();
   const { ensureWalletSession } = useWalletSession();
   const {
     stakeAsPlayer1,
@@ -66,20 +66,6 @@ const Welcome = ({ setGameState, savedUsername, onUsernameSet }) => {
   const { createChallenge } = useCreateChallenge();
   const { acceptChallenge, isPending: isAcceptChallengePending } = useAcceptChallenge();
   const [challenges, setChallenges] = useState([]);
-
-  const handleWalletToggle = useCallback(async () => {
-    if (isConnected) {
-      disconnectWallet();
-    } else {
-      try {
-        await open();
-        notify('Wallet connected successfully!', { type: 'success' });
-      } catch (err) {
-        console.error('Wallet connection failed:', err);
-        notify(err.message || 'Failed to connect wallet. Make sure your wallet extension is installed and unlocked.', { type: 'error' });
-      }
-    }
-  }, [isConnected, open, disconnectWallet, notify]);
 
   // Fetch open challenges
   useEffect(() => {
@@ -272,7 +258,7 @@ const Welcome = ({ setGameState, savedUsername, onUsernameSet }) => {
   const promptUsername = (callback) => {
     if (!isConnected || !address) {
       notify('Connect your wallet before choosing a username.', { type: 'warning' });
-      handleWalletToggle();
+      open().catch(() => {});
       return;
     }
 
@@ -637,7 +623,22 @@ const Welcome = ({ setGameState, savedUsername, onUsernameSet }) => {
       {/* Wallet Connect Button — hidden in MiniPay (implicit connection) */}
       <div className="wallet-connect-container">
         {!inMiniPay && (
-          <button onClick={handleWalletToggle} className="connect-wallet-btn">
+          <button
+            onClick={() => {
+              if (isConnected) {
+                disconnect();
+                return;
+              }
+              open().catch(err => {
+                const message = err?.message?.toLowerCase() || '';
+                const userCancelled = message.includes('rejected') || message.includes('denied') || message.includes('canceled') || message.includes('cancelled');
+                if (!userCancelled) {
+                  notify(err?.message || 'Failed to connect wallet. Make sure your wallet extension is installed and unlocked.', { type: 'error' });
+                }
+              });
+            }}
+            className="connect-wallet-btn"
+          >
             {isConnected
               ? `Disconnect ${address?.slice(0, 6)}...${address?.slice(-4)}`
               : "Connect Wallet"}

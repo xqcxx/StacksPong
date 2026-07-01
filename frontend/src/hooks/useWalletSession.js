@@ -5,6 +5,7 @@ import {
   tupleCV,
   uintCV
 } from '@stacks/transactions';
+import { openStructuredDataSignatureRequestPopup } from '@stacks/connect';
 import { useAccount } from '../components/Web3Provider';
 import { BACKEND_URL } from '../constants';
 
@@ -27,7 +28,7 @@ export function getStoredWalletSession(address) {
 }
 
 export function useWalletSession() {
-  const { address, signStructuredMessage } = useAccount();
+  const { address, userSession } = useAccount();
 
   const ensureWalletSession = useCallback(async () => {
     if (!address) throw new Error('Connect your Stacks wallet first.');
@@ -52,7 +53,16 @@ export function useWalletSession() {
       challenge: stringAsciiCV(challenge.message.challenge),
       wallet: standardPrincipalCV(address)
     });
-    const signed = await signStructuredMessage({ message, domain });
+
+    const signed = await new Promise((resolve, reject) => {
+      openStructuredDataSignatureRequestPopup({
+        message,
+        domain,
+        userSession,
+        onFinish: (data) => resolve(data),
+        onCancel: (error) => reject(error || new Error('Signature cancelled'))
+      });
+    });
 
     const sessionResponse = await fetch(`${BACKEND_URL}/auth/wallet-session`, {
       method: 'POST',
@@ -70,7 +80,7 @@ export function useWalletSession() {
 
     sessionStorage.setItem(storageKey(address), JSON.stringify(session));
     return session.token;
-  }, [address, signStructuredMessage]);
+  }, [address, userSession]);
 
   return { ensureWalletSession };
 }

@@ -1,6 +1,6 @@
 /* global BigInt */
 import { useCallback, useEffect, useState } from 'react';
-import { request } from '@stacks/connect';
+import { openContractCall } from '@stacks/connect';
 import {
   Pc,
   bufferCV,
@@ -127,7 +127,7 @@ function useReadOnly(functionName, args, enabled = true, transform = value => va
 }
 
 function useContractAction() {
-  const { address } = useAccount();
+  const { address, userSession } = useAccount();
   const [hash, setHash] = useState(null);
   const [receipt, setReceipt] = useState(null);
   const [isPending, setIsPending] = useState(false);
@@ -141,17 +141,22 @@ function useContractAction() {
     setIsSuccess(false);
     setError(null);
     try {
-      const result = await request('stx_callContract', {
-        address,
-        network: STACKS_NETWORK,
-        contract: PONG_CONTRACT_ID,
-        functionName,
-        functionArgs,
-        postConditionMode: 'deny',
-        postConditions
+      const payload = await new Promise((resolve, reject) => {
+        openContractCall({
+          contractAddress: PONG_CONTRACT_ADDRESS,
+          contractName: PONG_CONTRACT_NAME,
+          functionName,
+          functionArgs,
+          postConditionMode: 'deny',
+          postConditions,
+          network: STACKS_NETWORK,
+          userSession,
+          onFinish: (data) => resolve(data),
+          onCancel: (err) => reject(err || new Error('Transaction cancelled'))
+        });
       });
-      if (!result.txid) throw new Error('Wallet did not return a transaction ID');
-      const txid = result.txid.startsWith('0x') ? result.txid : `0x${result.txid}`;
+      if (!payload.txId) throw new Error('Wallet did not return a transaction ID');
+      const txid = payload.txId.startsWith('0x') ? payload.txId : `0x${payload.txId}`;
       setHash(txid);
       setIsPending(false);
       setIsConfirming(true);
@@ -166,7 +171,7 @@ function useContractAction() {
       setError(nextError);
       throw nextError;
     }
-  }, [address]);
+  }, [address, userSession]);
 
   return { execute, hash, receipt, isPending, isConfirming, isSuccess, error };
 }

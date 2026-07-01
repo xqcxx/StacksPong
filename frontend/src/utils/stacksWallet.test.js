@@ -1,37 +1,40 @@
-import { getWalletAddresses, selectStxAddress } from './stacksWallet';
+import { selectStxAddress } from './stacksWallet';
 
-const stxAccount = {
-  address: 'ST1C87AXAV2W92Q4X2TN4C77G7EDNP35JMEHEY9WZ',
-  symbol: 'STX',
-  publicKey: '03abc'
+const userData = {
+  profile: {
+    stxAddress: {
+      mainnet: 'SP132G3N7H1Y0VJVZGTHFBMEY5VZZY6WWN7DM3FPT',
+      testnet: 'ST1C87AXAV2W92Q4X2TN4C77G7EDNP35JMEHEY9WZ'
+    }
+  }
 };
 
-test('selects an STX account from a fresh wallet response', () => {
-  expect(selectStxAddress({
-    addresses: [
-      { address: 'tb1qexample', publicKey: '02btc' },
-      { address: stxAccount.address, publicKey: stxAccount.publicKey }
-    ]
-  })).toEqual({
-    address: stxAccount.address,
-    symbol: stxAccount.symbol,
-    publicKey: stxAccount.publicKey
+test('selects mainnet STX address from UserSession userData', () => {
+  const result = selectStxAddress(userData);
+  expect(result).toEqual({
+    address: 'SP132G3N7H1Y0VJVZGTHFBMEY5VZZY6WWN7DM3FPT',
+    publicKey: null
   });
 });
 
-test('selects an STX account from Connect local storage', () => {
-  const storage = {
-    addresses: {
-      stx: [{ address: stxAccount.address, publicKey: stxAccount.publicKey }],
-      btc: [{ address: 'tb1qexample' }]
+test('selects testnet STX address when mainnet is absent', () => {
+  const testnetOnly = {
+    profile: {
+      stxAddress: {
+        testnet: 'ST1C87AXAV2W92Q4X2TN4C77G7EDNP35JMEHEY9WZ'
+      }
     }
   };
-
-  expect(getWalletAddresses(storage)).toEqual([stxAccount]);
-  expect(selectStxAddress(storage)).toEqual(stxAccount);
+  const result = selectStxAddress(testnetOnly);
+  expect(result).toEqual({
+    address: 'ST1C87AXAV2W92Q4X2TN4C77G7EDNP35JMEHEY9WZ',
+    publicKey: null
+  });
 });
 
-test('treats malformed or empty wallet storage as disconnected', () => {
+test('returns null when userData lacks stxAddress', () => {
   expect(selectStxAddress(null)).toBeNull();
-  expect(selectStxAddress({ addresses: {} })).toBeNull();
+  expect(selectStxAddress({})).toBeNull();
+  expect(selectStxAddress({ profile: {} })).toBeNull();
+  expect(selectStxAddress({ profile: { stxAddress: {} } })).toBeNull();
 });
