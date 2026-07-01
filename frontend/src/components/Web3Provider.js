@@ -10,6 +10,8 @@ import {
   connect,
   disconnect,
   getLocalStorage,
+  clearLocalStorage,
+  isConnected,
   request
 } from '@stacks/connect';
 import { STACKS_CHAIN_ID, STACKS_NETWORK } from '../config/env';
@@ -21,13 +23,26 @@ export function Web3Provider({ children }) {
   const [account, setAccount] = useState(null);
 
   useEffect(() => {
-    const cached = selectStxAddress(getLocalStorage());
-    if (cached) setAccount(cached);
+    if (isConnected()) {
+      const cached = selectStxAddress(getLocalStorage());
+      if (cached) setAccount(cached);
+    }
   }, []);
 
   const open = useCallback(async () => {
     const response = await connect({ network: STACKS_NETWORK });
-    const next = selectStxAddress(response);
+    console.debug('[Web3Provider] connect response:', response);
+    let next = selectStxAddress(response);
+    if (!next) {
+      console.debug('[Web3Provider] connect() returned no STX address, trying stx_getAccounts as Xverse fallback');
+      try {
+        const accountsResponse = await request('stx_getAccounts', { network: STACKS_NETWORK });
+        console.debug('[Web3Provider] stx_getAccounts response:', accountsResponse);
+        next = selectStxAddress(accountsResponse);
+      } catch (fallbackErr) {
+        console.debug('[Web3Provider] stx_getAccounts fallback failed:', fallbackErr);
+      }
+    }
     if (!next) throw new Error('The wallet did not return a Stacks address');
     setAccount(next);
     return next;
@@ -35,6 +50,7 @@ export function Web3Provider({ children }) {
 
   const close = useCallback(() => {
     disconnect();
+    clearLocalStorage();
     setAccount(null);
   }, []);
 
@@ -45,7 +61,7 @@ export function Web3Provider({ children }) {
   const value = useMemo(() => ({
     address: account?.address || null,
     publicKey: account?.publicKey || null,
-    isConnected: Boolean(account?.address),
+    isConnected: Boolean(account?.address) && isConnected(),
     chainId: STACKS_CHAIN_ID,
     chain: { id: STACKS_CHAIN_ID, name: STACKS_NETWORK },
     open,
