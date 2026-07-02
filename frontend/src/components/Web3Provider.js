@@ -11,7 +11,7 @@ import {
   AppConfig,
   UserSession,
   authenticate,
-  openStructuredDataSignatureRequestPopup
+  request
 } from '@stacks/connect';
 import { STACKS_CHAIN_ID, STACKS_NETWORK } from '../config/env';
 import { getStxAddressFromSession } from '../utils/stacksWallet';
@@ -77,19 +77,7 @@ export function Web3Provider({ children }) {
   }, []);
 
   const signStructuredMessage = useCallback(async ({ message, domain }) => {
-    const session = userSessionRef.current;
-    if (!session) throw new Error('Session not initialized');
-
-    return new Promise((resolve, reject) => {
-      openStructuredDataSignatureRequestPopup({
-        message,
-        domain,
-        userSession: session,
-        network: STACKS_NETWORK,
-        onFinish: (data) => resolve(data),
-        onCancel: (error) => reject(error || new Error('Signature cancelled'))
-      });
-    });
+    return request('stx_signStructuredMessage', { message, domain });
   }, []);
 
   const value = useMemo(() => ({
