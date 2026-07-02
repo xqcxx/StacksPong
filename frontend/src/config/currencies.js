@@ -6,7 +6,9 @@ export const CURRENCIES = {
     tokenAddress: null,
     decimals: 6,
     color: '#5546ff',
-    isNative: true
+    isNative: true,
+    icon: '⬡',
+    presets: [0.1, 0.5, 1, 5, 10, 25, 50, 100]
   }
 };
 
